@@ -15,6 +15,19 @@ def structcon(gs):
     return np.mean(gs, axis=2)*struct_consensus(gs, dists, hemi)
 
 
+def passthrough(gs):
+    # Returns all the graphs as is; dummy function
+    return gs
+
+
+def unstratifiedSample(gs, verbose=False):
+    # Pick random value in a list and return the corresponding graph
+    idx = np.random.choice(gs.shape[-1], size=1)[0]
+    if verbose:
+        print(idx)
+    return gs[:,:,idx]
+
+
 def qcAggregate(gs, agg, g_ind=0, log=True):
     # Function to visualize example graph next to aggregate
     print("Original shape: ", gs.shape)
@@ -32,3 +45,5 @@ def qcAggregate(gs, agg, g_ind=0, log=True):
         agg = agg[:,:, g_ind]
     plt.imshow(func(agg))
     plt.show()
+
+
