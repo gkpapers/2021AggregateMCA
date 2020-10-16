@@ -1,24 +1,32 @@
 #!/usr/bin/env python
 
+from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.validation import check_array
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import VotingClassifier
+from copy import deepcopy
 import numpy as np
 
-from utils import structcon, passthrough
+from utils import structcon, passthrough, unstratifiedSample
 
 
 class AggregatedLearner():
     def __init__(self, dataframe, classifier, target_id, observation_id,
-                 sample_id, data_id, hold=0.1, cvfolds=10, random_seed=42):
+                 sample_id, data_id, verbose=False, hold=0.1, cvfolds=10,
+                 random_seed=42):
         # Store data, classifier, and the relevant IDs
         self.df = dataframe
-        self.clf = classifier
+        self.clf_obj = classifier
         self.rs = random_seed
         self.data_id = data_id
         self.target_id = target_id
         self.observation_id = observation_id
         self.cvfolds = cvfolds
-        self.performance = {}
+        self.verbose = verbose
+        self.clf = {}
+        self.perf = {}
+        self.oos_perf = {}
 
         # Sample the dataset to exclude the test set
         np.random.seed(random_seed)
@@ -35,6 +43,7 @@ class AggregatedLearner():
 
         # Get samples for (final) testing
         self.dat_t = self._grab(data_id, sample_id, self.train_ids, stack=True)
+        self.sam_t = self._grab(sample_id, sample_id, self.train_ids)
         self.obs_t = self._grab(observation_id, sample_id, self.train_ids)
         self.tar_t = self._grab(target_id, sample_id, self.train_ids)
 
@@ -44,58 +53,110 @@ class AggregatedLearner():
             aggregation = aggregation.lower()
 
         if aggregation == "mean":
-            self.performance[aggregation] = self._simple_fit(func=np.mean,
-                                                             axis=2)
+            clf, perf, oos = self._simple_fit(func=np.mean, axis=2)
         elif aggregation == "median":
-            self.performance[aggregation] = self._simple_fit(func=np.median,
-                                                             axis=2)
+            clf, perf, oos = self._simple_fit(func=np.median, axis=2)
         elif aggregation == "consensus":
-            self.performance[aggregation] = self._simple_fit(func=structcon)
+            clf, perf, oos = self._simple_fit(func=structcon)
         elif aggregation == "mega":
-            self.performance[aggregation] = self._simple_fit(func=passthrough)
+            clf, perf, oos = self._simple_fit(func=passthrough)
         elif aggregation == "meta":
-            self.performance[aggregation] = self._meta_fit()
+            if not get(self.clf, "none"):
+                self.fit(aggregation="none")
+            clf, perf, oos = self._meta_fit()
         else:  # None
-            #TODO: decide how many loops to jackknife
+            aggregation = "none"
+            clf = []
             perf = []
+            oos = []
             for _ in range(101):  # Jackknife 101 times
-                perf += [self._simple_fit(func=unstratifiedSample)]
-            self.performance["none"] = perf
+                tclf, tperf, toos = self._simple_fit(func=unstratifiedSample)
+                clf += [tclf]
+                perf += [tperf]
+                oos += [toos]
 
-    def _simple_fit(self, func=np.mean, *args, **kwargs):
-        X = np.dstack([func(d, *args, **kwargs) for d in self.dat])
-        Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
-        # For IDs, there are two options: all values (mega) or 1/brain (others)
-        if X.shape[2] == len(self.train_ids):
-            y = np.array([t[0] for t in self.tar])
-            grp = np.array([s[0] for s in self.sam])
+        self.clf[aggregation] = clf
+        self.perf[aggregation] = perf
+        self.oos_perf[aggregation] = oos
 
-        else:
-            y = np.array([_ for t in self.tar for _ in t])
-            grp = np.array([_ for s in self.sam for _ in s])
-
+    def _simple_fit(self, func, *args, **kwargs):
+        X, y, grp = self._prep_data(self.dat, self.tar, self.sam,
+                                    func, *args, **kwargs)
         cv = StratifiedGroupKFold(n_splits=self.cvfolds)
 
         perf = {}
-        perf['score'] = []
-        perf['targ'] = []
+        perf['true'] = []
         perf['pred'] = []
-        for train_idx, test_idx in cv.split(Xr, y, grp):
-            X_train, X_test = Xr[train_idx], Xr[test_idx]
+        perf['acc'] = []
+        perf['f1'] = []
+        tmpclfs = []
+        oos = {}
+
+        # Train and Validate model, and record in-sample performance
+        for train_idx, test_idx in cv.split(X, y, grp):
+            X_train, X_test = X[train_idx], X[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
-            self.clf.fit(X_train, y_train)
-            perf['targ'] += [y_test]
-            pred = self.clf.predict(X_test)
+            g_train, g_test = grp[train_idx], grp[test_idx]
+
+            tmpclf = deepcopy(self.clf_obj)
+            tmpclf.fit(X_train, y_train)
+            pred = tmpclf.predict(X_test)
+            perf['true'] += [y_test]
             perf['pred'] += [pred]
-            perf['score'] += self.clf.score(X_test, y_test)
-        return perf
+            perf['acc'] += [accuracy_score(y_test, pred)]
+            perf['f1'] += [f1_score(y_test, pred)]
+            tmpclfs += [tmpclf]
+            del tmpclf
+
+            if self.verbose:
+                print("Y: ", y_train, y_test)
+                print("G: ", g_train, g_test)
+                print("Accuracy: ", perf['acc'][-1])
+
+        # Aggregate classifiers across folds and test it OOS
+        Xo, yo, grpo = self._prep_data(self.dat_t, self.tar_t, self.sam_t,
+                                       func, *args, **kwargs)
+        clf = VotingClassifier(voting='soft',
+                               estimators=[(i, c)
+                                           for i, c in enumerate(tmpclfs)])
+        clf.estimators_ = tmpclfs
+        clf.le_ = LabelEncoder().fit(yo)
+        clf.classes_ = clf.le_.classes_
+
+        pred = clf.predict(Xo)
+        oos['true'] = yo
+        oos['pred'] = pred
+        oos['acc'] = accuracy_score(yo, pred)
+        oos['f1'] = f1_score(yo, pred)
+
+        if self.verbose:
+            print(oos['acc'])
+
+        return clf, perf, oos
+
+    def _prep_data(self, data, target, group, func, *args, **kwargs):
+        X = np.dstack([func(d, *args, **kwargs) for d in data])
+        Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
+
+        # For IDs, there are two options: 1/brain (most) or all values (mega)
+        if X.shape[2] == len(target):
+            y = np.array([t[0] for t in target])
+            grp = np.array([g[0] for g in group])
+        else:
+            y = np.array([_ for t in target for _ in t])
+            grp = np.array([_ for s in group for _ in s])
+
+        if self.verbose:
+            print(Xr.shape, y.shape, grp.shape)
+
+        return Xr, y, grp
 
     def _grab(self, want, sweep, exclude, stack=False):
         grabbed = []
         for s in self.df[sweep].unique():
             if s in exclude:
                 continue
-            dat = self.df.query("{0} == '{1}'".format(sweep, s))[want].values
+            dat = self.df[self.df[sweep] == s][want].values
             if stack:
                 dat = np.dstack(dat)
             grabbed += [dat]
