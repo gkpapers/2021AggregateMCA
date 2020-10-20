@@ -144,7 +144,8 @@ class _BaseStacking(TransformerMixin, _BaseHeterogeneousEnsemble,
         if self.cv == "prefit":
             self.estimators_ = []
             for estimator in all_estimators:
-                check_is_fitted(estimator)
+                # check_is_fitted(estimator)
+                # TODO: uncomment once bug #18648 is fixed
                 self.estimators_.append(estimator)
         else:
             # Fit the base estimators on the whole training data. Those

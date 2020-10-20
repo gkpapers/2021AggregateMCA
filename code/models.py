@@ -7,14 +7,17 @@ from copy import deepcopy
 import pandas as pd
 import numpy as np
 
-from utils import structcon, passthrough, unstratifiedSample
+from utils import structcon, passthrough, unstratifiedSample, refSample
 from skpatch import StackingClassifier, StratifiedGroupKFold
 
 
 class AggregatedLearner():
     def __init__(self, dataframe, classifier, target_id, observation_id,
                  sample_id, data_id, verbose=False, repeated_measures=False,
-                 oos=0.1, cvfolds=10, random_seed=42):
+                 oos=0.1, cvfolds=10, refstr = 'ref', random_seed=42):
+        # Sort by simulation ID, so "ref" is always in the same spot
+        dataframe = dataframe.sort_values(observation_id)
+
         # Store data, classifier, and the relevant IDs
         self.df = dataframe
         self.clf_obj = classifier
@@ -42,6 +45,7 @@ class AggregatedLearner():
         self.sam = self._grab(sample_id, sample_id, self.test_ids)
         self.obs = self._grab(observation_id, sample_id, self.test_ids)
         self.tar = self._grab(target_id, sample_id, self.test_ids)
+        self.refloc = np.where(self.obs[0] == refstr)[0]
 
         # Get samples for (final) testing
         self.dat_t = self._grab(data_id, sample_id, self.train_ids, stack=True)
@@ -74,38 +78,42 @@ class AggregatedLearner():
             clfs, perf = self._simple_fit(func=passthrough)
             clf, oos = self._oos_eval(clfs, func=passthrough)
 
+        # Ref: Use the reference executions
+        elif aggregation == "ref":
+            clfs, perf = self._simple_fit(func=refSample, index=self.refloc)
+            clf, oos = self._oos_eval(clfs, func=refSample, index=self.refloc)
+
         # Meta: Stack "none" classifiers and train/validate once, jackknife test
         elif aggregation == "meta":
             # Ensure the jackknifed classifiers have already been fit
             if not self.clf.get("none"):
                 self.fit(aggregation="none")
             clfs, perf = self._simple_fit(func=unstratifiedSample, meta=True)
+            # Just wrapping in a list for the sake of the report function
+            perf = [perf]
             clf, oos = self._oos_eval(clfs, func=unstratifiedSample, meta=True)
 
         # None/Jackknife: Sample observations and train/validate/test repeatedly
         else:
             aggregation = "none"
             clf = []
-            clf_list = []
             perf = []
             oos = []
             for _ in range(self.n_jack):  # Jackknife N (=101) times
                 tclfs, tperf = self._simple_fit(func=unstratifiedSample)
                 tclf, toos = self._oos_eval(tclfs, func=unstratifiedSample)
-                clf_list += [tclfs]
                 clf += [tclf]
                 perf += [tperf]
                 oos += [toos]
 
                 del tclf, tperf, toos
-            self.jackknife_clfs = clf_list
 
         # Store the results as an attribute of the class object
         self.clf[aggregation] = clf
         self.perf[aggregation] = perf
         self.oos_perf[aggregation] = oos
 
-    def _simple_fit(self, func, meta=False, est_list=None, *args, **kwargs):
+    def _simple_fit(self, func, meta=False, *args, **kwargs):
         # Generate training data and CV object
         X, y, grp = self._prep_data(self.dat, self.tar, self.sam,
                                     func, *args, **kwargs)
@@ -164,7 +172,7 @@ class AggregatedLearner():
         if meta:
             oos = []
             # Jackknife for proportionally fewer cases in meta eval
-            for _ in range(np.ceil(self.n_jack*self.n_oos)):
+            for _ in range(int(np.ceil(self.n_jack*self.n_oos))):
                 tmpclf, tmpoos = self._oos_eval(clfs, func, meta=False,
                                                 *args, **kwargs)
                 clf = tmpclf
@@ -217,12 +225,13 @@ class AggregatedLearner():
 
         return Xr, y, grp
 
-    def _get_folded_estimators(self):
+    def _get_folded_estimators(self, aggregation="none"):
         # Turn list of classifiers across jackknives into grouped-by-fold list
+        ests = [c.estimators_ for c in self.clf[aggregation]]
         splits = []
-        for jdx in range(len(self.jackknife_clfs[0])):
+        for jdx in range(len(ests[0])):
             splits.append([])
-            for est in self.jackknife_clfs:
+            for est in ests:
                 splits[jdx] += [est[jdx]]
             splits[jdx] = [(str(i), c) for i, c in enumerate(splits[jdx])]
         return splits

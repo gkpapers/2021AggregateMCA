@@ -20,6 +20,10 @@ def passthrough(gs):
     return gs
 
 
+def refSample(gs, index=0):
+    return gs[:,:,index]
+
+
 def unstratifiedSample(gs, verbose=False):
     # Pick random value in a list and return the corresponding graph
     idx = np.random.choice(gs.shape[-1], size=1)[0]
