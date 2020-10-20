@@ -14,7 +14,7 @@ from skpatch import StackingClassifier, StratifiedGroupKFold
 class AggregatedLearner():
     def __init__(self, dataframe, classifier, target_id, observation_id,
                  sample_id, data_id, verbose=False, repeated_measures=False,
-                 oos=0.1, cvfolds=10, refstr = 'ref', random_seed=42):
+                 oos=0.1, cvfolds=10, refstr='ref', random_seed=42):
         # Sort by simulation ID, so "ref" is always in the same spot
         dataframe = dataframe.sort_values(observation_id)
 
