@@ -11,7 +11,7 @@ from utils import structcon, passthrough, unstratifiedSample, refSample
 from skpatch import StackingClassifier, StratifiedGroupKFold
 
 
-class AggregatedLearner():
+class AggregateLearner():
     def __init__(self, dataframe, classifier, target_id, observation_id,
                  sample_id, data_id, verbose=False, repeated_measures=False,
                  oos=0.1, cvfolds=10, refstr='ref', random_seed=42):
@@ -198,6 +198,10 @@ class AggregatedLearner():
         oos['pred'] = pred
         oos['acc'] = accuracy_score(yo, pred)
         oos['f1'] = f1_score(yo, pred)
+        # Compare to mean oos-performance of component classifiers
+        comp_preds = [c.predict(Xo) for c in clfs]
+        oos['comp_acc'] = np.mean([accuracy_score(yo, cp) for cp in comp_preds])
+        oos['comp_f1'] = np.mean([f1_score(yo, cp) for cp in comp_preds])
 
         # Print performance
         if self.verbose:
@@ -248,11 +252,18 @@ class AggregatedLearner():
                 # If we have a list of test performance values, average them
                 act = np.mean([vv['acc'] for vv in self.oos_perf[k]])
                 f1t = np.mean([vv['f1'] for vv in self.oos_perf[k]])
+
+                # Treat the composite average test performance the same as above
+                cact = np.mean([vv['comp_acc'] for vv in self.oos_perf[k]])
+                cf1t = np.mean([vv['comp_f1'] for vv in self.oos_perf[k]])
+
             else:
                 ac = v['acc']
                 f1 = v['f1']
                 act = self.oos_perf[k]["acc"]
                 f1t = self.oos_perf[k]["f1"]
+                cact = self.oos_perf[k]["comp_acc"]
+                cf1t = self.oos_perf[k]["comp_f1"]
 
             # Add "row" to eventual dataframe
             dflist += [
@@ -262,6 +273,8 @@ class AggregatedLearner():
                     "f1": np.mean(f1),
                     "test_acc": act,
                     "test_f1": f1t,
+                    "test_mean_acc": cact,
+                    "test_mean_f1": cf1t,
                     "n_models": len(ac)
                 }
             ]
