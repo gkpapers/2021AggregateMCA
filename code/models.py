@@ -14,7 +14,7 @@ from skpatch import StackingClassifier, StratifiedGroupKFold
 class AggregateLearner():
     def __init__(self, dataframe, classifier, target_id, observation_id,
                  sample_id, data_id, verbose=False, repeated_measures=False,
-                 oos=0.2, cvfolds=5, refstr='ref', random_seed=42):
+                 oos=0.2, cvfolds=5, refstr='ref', triu=False, random_seed=42):
         # Sort by simulation ID, so "ref" is always in the same spot
         dataframe = dataframe.sort_values(observation_id)
 
@@ -27,6 +27,7 @@ class AggregateLearner():
         self.observation_id = observation_id
         self.cvfolds = cvfolds
         self.verbose = verbose
+        self.triu = triu
         self.n_jack = 101
         self.n_oos = oos
         self.clf = {}
@@ -125,6 +126,7 @@ class AggregateLearner():
         perf['pred'] = []
         perf['acc'] = []
         perf['f1'] = []
+        perf['expvar'] = []
         tmpclfs = []
 
         # In the case of the meta learner, pre-load classifiers from the "none"
@@ -156,6 +158,7 @@ class AggregateLearner():
             perf['pred'] += [pred]
             perf['acc'] += [accuracy_score(y_test, pred)]
             perf['f1'] += [f1_score(y_test, pred)]
+            perf['expvar'] += [np.sum(tmpclf[0].explained_variance_ratio_)]
             tmpclfs += [tmpclf]
             del tmpclf
 
@@ -164,6 +167,7 @@ class AggregateLearner():
                 print("Y: ", y_train, y_test)
                 print("G: ", g_train, g_test)
                 print("Accuracy: ", perf['acc'][-1])
+                print("Expl. Variance: ", perf['expvar'][-1])
 
         return tmpclfs, perf
 
@@ -205,14 +209,22 @@ class AggregateLearner():
 
         # Print performance
         if self.verbose:
-            print(oos['acc'])
+            print("Test Accuracy: ", oos['acc'])
         return clf, oos
 
     def _prep_data(self, data, target, group, func, *args, **kwargs):
         # Apply sampling function to the dataset and reshape the graphs to be 1D
         X = np.dstack([func(d, *args, **kwargs) for d in data])
-        Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
 
+        # If flag is set, reduce connectomes to upper triangular
+        import pdb; pdb.set_trace()
+        if self.triu:
+            triu_ind = np.triu_indices_from(X[:,:,-1], k=1)
+            Xr = np.dstack([X[..., i][triu_ind] for i in range(X.shape[-1])])
+            Xr = np.reshape(Xr, (Xr.shape[1], Xr.shape[-1])).T
+        else:
+            Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
+        pdb.set_trace()
         # For IDs, there are two options: 1/brain (most) or all values (mega)
         if X.shape[2] == len(target):
             # In the former, take a single value (b.c. sampling)
@@ -225,7 +237,7 @@ class AggregateLearner():
 
         # Print size of resulting data structures
         if self.verbose:
-            print(Xr.shape, y.shape, grp.shape)
+            print(X.shape, Xr.shape, y.shape, grp.shape)
 
         return Xr, y, grp
 
