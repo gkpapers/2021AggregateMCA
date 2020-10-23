@@ -158,7 +158,12 @@ class AggregateLearner():
             perf['pred'] += [pred]
             perf['acc'] += [accuracy_score(y_test, pred)]
             perf['f1'] += [f1_score(y_test, pred)]
-            perf['expvar'] += [np.sum(tmpclf[0].explained_variance_ratio_)]
+            # For compatible models, grab explained variance
+            try:
+                perf['expvar'] += [np.sum(tmpclf[0].explained_variance_ratio_)]
+            except TypeError:
+                perf['expvar'] += [None]
+
             tmpclfs += [tmpclf]
             del tmpclf
 
@@ -217,14 +222,13 @@ class AggregateLearner():
         X = np.dstack([func(d, *args, **kwargs) for d in data])
 
         # If flag is set, reduce connectomes to upper triangular
-        import pdb; pdb.set_trace()
         if self.triu:
             triu_ind = np.triu_indices_from(X[:,:,-1], k=1)
             Xr = np.dstack([X[..., i][triu_ind] for i in range(X.shape[-1])])
             Xr = np.reshape(Xr, (Xr.shape[1], Xr.shape[-1])).T
         else:
             Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
-        pdb.set_trace()
+
         # For IDs, there are two options: 1/brain (most) or all values (mega)
         if X.shape[2] == len(target):
             # In the former, take a single value (b.c. sampling)
