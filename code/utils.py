@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from netneurotools.networks import struct_consensus
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -33,6 +32,7 @@ def unstratifiedSample(gs, verbose=False):
 
 
 def qcAggregate(gs, agg, g_ind=0, log=True):
+    import matplotlib.pyplot as plt
     # Function to visualize example graph next to aggregate
     print("Original shape: ", gs.shape)
     print("Aggregation shape: ", agg.shape)
