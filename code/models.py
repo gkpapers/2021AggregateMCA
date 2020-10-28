@@ -172,7 +172,6 @@ class AggregateLearner():
                 print("Y: ", y_train, y_test)
                 print("G: ", g_train, g_test)
                 print("Accuracy: ", perf['acc'][-1])
-                print("Expl. Variance: ", perf['expvar'][-1])
 
         return tmpclfs, perf
 
@@ -214,6 +213,8 @@ class AggregateLearner():
 
         # Print performance
         if self.verbose:
+            print("Y: ", pred, "->", yo)
+            print("G: ", grpo)
             print("Test Accuracy: ", oos['acc'])
         return clf, oos
 
@@ -230,7 +231,7 @@ class AggregateLearner():
             Xr = np.reshape(X, (X.shape[0]**2, X.shape[2])).T
 
         # For IDs, there are two options: 1/brain (most) or all values (mega)
-        if X.shape[2] == len(target):
+        if Xr.shape[0] == len(target):
             # In the former, take a single value (b.c. sampling)
             y = np.array([t[0] for t in target])
             grp = np.array([g[0] for g in group])
