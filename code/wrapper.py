@@ -20,9 +20,9 @@ def createPipe(clf_name, nsubs):
     n_comp = 20 if nsubs > 70 else 15
     pca = PCA(n_components=n_comp)
     classifs = {
-        "SVM": SVC(kernel='linear', probability=True),
-        "RF": RandomForestClassifier(),
-        "LR": LogisticRegression(solver='liblinear')
+        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True),
+        "RF": RandomForestClassifier(n_estimators=50),
+        "LR": LogisticRegression(solver='liblinear', max_iter=1e6)
     }
     pipe = Pipeline(steps=[('pca', pca), (clf_name, classifs[clf_name])])
     return pipe
@@ -35,21 +35,24 @@ def sampleSimulations(df, experiment, rs, n_mca):
     if not experiment == 'mca':
         notexp = "subsample" if experiment == "session" else "session"
         df = df.query("simulation == 'ref' and {0} == 0".format(notexp))
+    else:
+        df = df.query("subsample == 0 and session == 0")
 
     for idx, sub in enumerate(df['subject'].unique()):
         # Grab a temporary dataframe for each subject
         tdf = df.query("subject == {0}".format(sub))
         if idx == 0:
             # First check if we are/can actually subsample this dataset
-            n_samples = np.min([n_mca, len(tdf['simulation'].unique())])
-            # If we only have 1 sample or aren't subsampling at all, leave
-            if n_samples == 1 or n_samples == n_mca:
+            n_sims = len(tdf['simulation'].unique())
+            n_samples = np.min([n_mca, n_sims])
+            # If we aren't subsampling at all, leave
+            if n_samples == n_sims:
                 newdf = df
                 break
             # Otherwise, start a new dataframe with a slice of the old one
-            newdf = tdf.sample(n=n_mca, axis=0)
+            newdf = tdf.sample(n=n_samples, axis=0)
         else:
-            newdf = pd.concat([newdf, tdf.sample(n=n_mca, axis=0)])
+            newdf = pd.concat([newdf, tdf.sample(n=n_samples, axis=0)])
     return newdf
 
 
@@ -66,8 +69,7 @@ def main(args=None):
     parser.add_argument("classifier", choices=["RF", "SVM", "LR"])
 
     parser.add_argument("--random_seed", "-r", default=41, type=int)
-    parser.add_argument("--n_mca", "-n", choices=[20, 15, 10, 5, 2],
-                        default=20)
+    parser.add_argument("--n_mca", "-n", default=20, type=int)
     parser.add_argument("--verbose", "-v", action="store_true")
 
     # Parse arguments, and extract details/setup experiment
