@@ -32,7 +32,7 @@ def sampleSimulations(df, experiment, rs, n_mca):
     # Set random seed outside of loop
     np.random.seed(rs)
     # If we're evaluating multi-acquisition, remove MCA & other acq. component
-    if not experiment.startswith('mca'):
+    if not experiment == 'mca':
         notexp = "subsample" if experiment == "session" else "session"
         df = df.query("simulation == 'ref' and {0} == 0".format(notexp))
 
@@ -57,8 +57,7 @@ def main(args=None):
     parser = ArgumentParser()
     parser.add_argument("outpath", help="Directory for storing the results.")
     parser.add_argument("dset", help="Path to H5 input data file.")
-    parser.add_argument("experiment", choices=["mca_total", "mca_sub",
-                                               "subsample", "session"])
+    parser.add_argument("experiment", choices=["mca", "subsample", "session"])
     parser.add_argument("target", choices=["age", "sex", "cholesterol",
                                            "rel_vo2max", "bmi"])
     # Note: "meta" aggregation includes "none"/"jackknife"
@@ -82,9 +81,9 @@ def main(args=None):
     df = sampleSimulations(df, ar.experiment, ar.random_seed, ar.n_mca)
 
     # Set some parameters based on experiment type
-    obs_id = "simulation" if ar.experiment.startswith('mca') else ar.experiment
-    ref_st = "ref" if ar.experiment.startswith('mca') else 0
-    jack = 100 if ar.experiment.startswith('mca') else 10
+    obs_id = "simulation" if ar.experiment == 'mca' else ar.experiment
+    ref_st = "ref" if ar.experiment == 'mca' else 0
+    jack = 100 if ar.experiment == 'mca' else 10
 
     # Create aggregator object for the designed experiment
     clf = AggregateLearner(df, pipe,
@@ -104,7 +103,7 @@ def main(args=None):
     clf.fit(aggregation=ar.aggregation)
 
     # Create output file names
-    experiment_pieces = [ar.experiment, ar.aggregation, ar.target,
+    experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.target,
                          ar.classifier, ar.random_seed]
     ofn = "_".join(str(e) for e in experiment_pieces)
     rep_op = op.join(ar.outpath, "report_" + ofn + ".csv")
