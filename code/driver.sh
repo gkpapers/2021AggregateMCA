@@ -2,6 +2,7 @@
 
 resd="../data/results/"
 dset="../data/aggregation_connect+demo_dset25x2x2x20.h5"
+logf="../data/log_D25.txt"
 
 # exps="mca"  # For D100
 exps="mca session subsample" # For D25
@@ -24,15 +25,16 @@ do
       fi
       for a in ${agg_iter}
       do
-        bstr="$e $t $a $c"
         if [[ $e == "mca" ]]
         then
           for n in ${nmca}
           do
-            python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --n_mca ${n} --verbose
+            echo $e $t $a $c $n &>> ${logf}
+            (time python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --n_mca ${n} --verbose) &>>${logf}
           done
         else
-          python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --verbose
+          echo $e $t $a $c &>> ${logf}
+          (time python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --verbose) &>>${logf}
         fi
       done
     done
