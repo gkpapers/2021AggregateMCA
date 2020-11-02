@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import VotingClassifier
@@ -35,11 +36,14 @@ class AggregateLearner():
         self.oos_perf = {}
 
         # Sample the dataset to exclude the test set
-        np.random.seed(random_seed)
-        unique_samples = list(self.df[sample_id].unique())
-        self.test_ids = set(np.random.choice(unique_samples,
-                                             round(len(unique_samples)*oos)))
-        self.train_ids = set(self.df[sample_id].unique()) - self.test_ids
+        np.random.seed(self.rs)
+        unique_samples = sorted(list(self.df[sample_id].unique()))
+        targets = [self.df[self.df[sample_id] == s][target_id].values[0]
+                   for s in unique_samples]
+        tr, te = train_test_split(unique_samples, stratify=targets,
+                                  random_state=self.rs, test_size=self.n_oos)
+        self.train_ids = tr
+        self.test_ids = te
 
         # Get samples for training (will be split into train/validate later)
         self.dat = self._grab(data_id, sample_id, self.test_ids, stack=True)
