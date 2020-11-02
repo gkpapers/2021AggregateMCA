@@ -4,6 +4,8 @@ resd="../data/results/"
 dset="../data/aggregation_connect+demo_dset25x2x2x20.h5"
 logf="../data/log_D25.txt"
 
+mkdir -p ${resd}
+
 # exps="mca"  # For D100
 exps="mca session subsample" # For D25
 
