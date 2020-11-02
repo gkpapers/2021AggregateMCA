@@ -12,7 +12,6 @@ targets="bmi age sex rel_vo2max"  # For D25
 
 nmca="20 15 10 5 2"
 targets="bmi age cholesterol sex rel_vo2max"
->>>>>>> Stashed changes
 aggs="ref meta mega mean median consensus"
 classifs="SVM LR RF"
 
