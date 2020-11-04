@@ -1,16 +1,32 @@
 #!/usr/bin/env bash
 
-resd="../data/results/"
-dset="../data/aggregation_connect+demo_dset25x2x2x20.h5"
-logf="../data/log_D25.txt"
+bp="/home/gkiar/code/gkiar-aggregate/code/"
+cd ${bp}
 
-mkdir -p ${resd}
+if [[ ${1} == 25 ]]
+then
+  DSET="D25"
+  dset="../data/aggregation_connect+demo_dset25x2x2x20.h5"
+else
+  DSET="D100"
+  dset="../data/aggregation_connect+feature+demo_dset100x1x1x20.h5"
+fi
 
-# exps="mca"  # For D100
-exps="mca session subsample" # For D25
+resd="../data/results_${DSET}/"
+jobp="./slurm_scripts/"
 
-# targets="bmi age cholesterol sex rel_vo2max"  # For D100
-targets="bmi age sex rel_vo2max"  # For D25
+mkdir -p ${resd} ${jobp}
+
+if [[ ${DSET} == "D100" ]]
+then
+  exps="mca"
+  targets="bmi age cholesterol sex rel_vo2max"
+  timest="06:00:00"
+else
+  exps="mca session subsample"
+  targets="bmi age sex rel_vo2max"
+  timest="00:30:00"
+fi
 
 nmca="20 15 10 5 2"
 aggs="ref meta mega mean median consensus"
@@ -22,26 +38,41 @@ do
   do
     for e in ${exps}
     do
-      if [[ $e != "mca" ]]
-      then
-        agg_iter=`echo ${aggs} | cut -d " " -f -4`
-      else
-        agg_iter=${aggs}
-      fi
-      for a in ${agg_iter}
-      do
-        if [[ $e == "mca" ]]
-        then
-          for n in ${nmca}
-          do
-            echo $e $t $a $c $n &>> ${logf}
-            (time python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --n_mca ${n} --verbose) &>>${logf}
-          done
-        else
-          echo $e $t $a $c &>> ${logf}
-          (time python wrapper.py ${resd} ${dset} ${e} ${t} ${a} ${c} --verbose) &>>${logf}
-        fi
-      done
+      logf="${jobp}log_${DSET}_${t}_${c}_${e}.txt"
+      cat << TMP > ${jobp}exec_${t}_${c}_${e}.sh
+#!/bin/bash
+#SBATCH --time ${timest}
+#SBATCH --mem 16G
+#SBATCH --account rpp-aevans-ab
+
+
+cd ${bp}
+
+exp="${e}"
+
+if [[ \${exp} != "mca" ]]
+then
+  agg_iter="`echo ${aggs} | cut -d " " -f -4`"
+else
+  agg_iter="${aggs}"
+fi
+for a in \${agg_iter}
+do
+  if [[ \${exp} == "mca" ]]
+  then
+    for n in ${nmca}
+    do
+      echo $e $t \$a $c \$n &>> ${logf}
+      (time python wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --n_mca \${n} --verbose) &>>${logf}
+    done
+  else
+    echo $e $t \$a $c &>> ${logf}
+    (time python wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --verbose) &>>${logf}
+  fi
+done
+TMP
+      chmod +x ${jobp}exec_${t}_${c}_${e}.sh
+      sbatch ${jobp}exec_${t}_${c}_${e}.sh
     done
   done
 done
