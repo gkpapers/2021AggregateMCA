@@ -10,6 +10,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 
+from pandas.core.computation.ops import UndefinedVariableError
 import pandas as pd
 import numpy as np
 
@@ -36,7 +37,10 @@ def sampleSimulations(df, experiment, rs, n_mca):
         notexp = "subsample" if experiment == "session" else "session"
         df = df.query("simulation == 'ref' and {0} == 0".format(notexp))
     else:
-        df = df.query("subsample == 0 and session == 0")
+        try:
+            df = df.query("subsample == 0 and session == 0")
+        except UndefinedVariableError:
+            pass  # If there aren't sessions or subsamples, use the full df
 
     for idx, sub in enumerate(df['subject'].unique()):
         # Grab a temporary dataframe for each subject
