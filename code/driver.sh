@@ -64,11 +64,11 @@ do
     for n in ${nmca}
     do
       echo $e $t \$a $c \$n &>> ${logf}
-      (time python wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --n_mca \${n} --verbose) &>>${logf}
+      (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --n_mca \${n} --verbose) &>>${logf}
     done
   else
     echo $e $t \$a $c &>> ${logf}
-    (time python wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --verbose) &>>${logf}
+    (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} ${c} --verbose) &>>${logf}
   fi
 done
 TMP
