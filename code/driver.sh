@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
 bp="/home/gkiar/code/gkiar-aggregate/code/"
-cd ${bp}
+cd $bp
 
 if [[ ${1} == 25 ]]
 then
   DSET="D25"
   dset="../data/aggregation_connect+demo_dset25x2x2x20.h5"
+  jobp="./slurm_scripts_25/"
 else
   DSET="D100"
   dset="../data/aggregation_connect+feature+demo_dset100x1x1x20.h5"
+  jobp="./slurm_scripts_100/"
 fi
 
 resd="../data/results_${DSET}/"
-jobp="./slurm_scripts/"
-
 mkdir -p ${resd} ${jobp}
 
 if [[ ${DSET} == "D100" ]]
@@ -46,6 +46,7 @@ do
 #SBATCH --account rpp-aevans-ab
 
 
+source /home/gkiar/code/env/aggregate/bin/activate
 cd ${bp}
 
 exp="${e}"
