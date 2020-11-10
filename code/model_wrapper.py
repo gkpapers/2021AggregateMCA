@@ -55,13 +55,15 @@ def sampleSimulations(df, experiment, rs, n_mca, rf="ref"):
             if n_samples == n_sims:
                 newdf = df
                 break
+
             # Otherwise, start a new dataframe with a slice of the old one
             newdf = tdf.sample(n=n_samples, axis=0)
+            # Immediately add reference executions for all samples
+            newdf = pd.concat([newdf,
+                               df.query('simulation == "{0}"'.format(rf))])
         else:
             newdf = pd.concat([newdf, tdf.sample(n=n_samples, axis=0)])
 
-    # Add reference executions for all samples
-    newdf = pd.concat([newdf, df.query('simulation == "{0}"'.format(rf))])
     newdf.reset_index(inplace=True)
     return newdf
 
