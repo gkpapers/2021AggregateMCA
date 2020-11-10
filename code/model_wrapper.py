@@ -31,7 +31,7 @@ def createPipe(clf_name, nsubs):
     return pipe
 
 
-def sampleSimulations(df, experiment, rs, n_mca):
+def sampleSimulations(df, experiment, rs, n_mca, rf="ref"):
     # Set random seed outside of loop
     np.random.seed(rs)
     # If we're evaluating multi-acquisition, remove MCA & other acq. component
@@ -46,7 +46,7 @@ def sampleSimulations(df, experiment, rs, n_mca):
 
     for idx, sub in enumerate(df['subject'].unique()):
         # Grab a temporary dataframe for each subject
-        tdf = df.query("subject == {0}".format(sub))
+        tdf = df.query("subject == {0} and simulation != '{1}'".format(sub, rf))
         if idx == 0:
             # First check if we are/can actually subsample this dataset
             n_sims = len(tdf['simulation'].unique())
@@ -59,6 +59,10 @@ def sampleSimulations(df, experiment, rs, n_mca):
             newdf = tdf.sample(n=n_samples, axis=0)
         else:
             newdf = pd.concat([newdf, tdf.sample(n=n_samples, axis=0)])
+
+    # Add reference executions for all samples
+    newdf = pd.concat([newdf, df.query('simulation == "{0}"'.format(rf))])
+    newdf.reset_index(inplace=True)
     return newdf
 
 
