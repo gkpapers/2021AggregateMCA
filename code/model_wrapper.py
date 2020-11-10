@@ -21,10 +21,11 @@ def createPipe(clf_name, nsubs):
     n_comp = 20 if nsubs > 70 else 15
     pca = PCA(n_components=n_comp)
     classifs = {
-        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True,
+        "SVM": SVC(kernel='linear', max_iter=1e8, probability=True,
                    class_weight="balanced"),
-        "RF": RandomForestClassifier(n_estimators=50, class_weight="balanced"),
-        "LR": LogisticRegression(solver='liblinear', max_iter=1e6,
+        "RF": RandomForestClassifier(n_estimators=n_comp*5,
+                                     class_weight="balanced"),
+        "LR": LogisticRegression(solver='liblinear', max_iter=1e8,
                                  class_weight="balanced")
     }
     pipe = Pipeline(steps=[('pca', pca), (clf_name, classifs[clf_name])])
@@ -80,7 +81,7 @@ def main(args=None):
                                                 "consensus", "mega", "meta"])
     parser.add_argument("classifier", choices=["RF", "SVM", "LR"])
 
-    parser.add_argument("--random_seed", "-r", default=41, type=int)
+    parser.add_argument("--random_seed", "-r", default=42, type=int)
     parser.add_argument("--n_mca", "-n", default=20, type=int)
     parser.add_argument("--verbose", "-v", action="store_true")
 
