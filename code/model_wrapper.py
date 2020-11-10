@@ -21,9 +21,11 @@ def createPipe(clf_name, nsubs):
     n_comp = 20 if nsubs > 70 else 15
     pca = PCA(n_components=n_comp)
     classifs = {
-        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True),
-        "RF": RandomForestClassifier(n_estimators=50),
-        "LR": LogisticRegression(solver='liblinear', max_iter=1e6)
+        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True,
+                   class_weight="balanced"),
+        "RF": RandomForestClassifier(n_estimators=50, class_weight="balanced"),
+        "LR": LogisticRegression(solver='liblinear', max_iter=1e6,
+                                 class_weight="balanced")
     }
     pipe = Pipeline(steps=[('pca', pca), (clf_name, classifs[clf_name])])
     return pipe
@@ -89,7 +91,7 @@ def main(args=None):
     # Set some parameters based on experiment type
     obs_id = "simulation" if ar.experiment == 'mca' else ar.experiment
     ref_st = "ref" if ar.experiment == 'mca' else 0
-    jack = 100 if ar.experiment == 'mca' else 10
+    jack = 5*ar.n_mca if ar.experiment == 'mca' else 10
 
     # Create aggregator object for the designed experiment
     clf = AggregateLearner(df, pipe,
