@@ -83,6 +83,7 @@ def main(args=None):
 
     parser.add_argument("--random_seed", "-r", default=42, type=int)
     parser.add_argument("--n_mca", "-n", default=20, type=int)
+    parser.add_argument("--save_all", "-s", default=False, type=bool)
     parser.add_argument("--verbose", "-v", action="store_true")
 
     # Parse arguments, and extract details/setup experiment
@@ -125,9 +126,10 @@ def main(args=None):
     clf_op = op.join(ar.outpath, "clfobj_" + ofn + ".pkl")
 
     # Save the classification report to a CSV and the classifier(s) to a pickle
-    clf.performance_report().to_csv(rep_op)
-    with open(clf_op, 'wb') as fhandle:
-        pickle.dump(clf, fhandle, pickle.HIGHEST_PROTOCOL)
+    if ar.save_all:
+        clf.performance_report().to_csv(rep_op)
+        with open(clf_op, 'wb') as fhandle:
+            pickle.dump(clf, fhandle, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
