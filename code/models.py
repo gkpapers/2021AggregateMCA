@@ -42,8 +42,8 @@ class AggregateLearner():
                    for s in unique_samples]
         tr, te = train_test_split(unique_samples, stratify=targets,
                                   random_state=self.rs, test_size=self.n_oos)
-        self.train_ids = tr
-        self.test_ids = te
+        self.train_ids = sorted(tr)
+        self.test_ids = sorted(te)
 
         # Get samples for training (will be split into train/validate later)
         self.dat = self._grab(data_id, sample_id, self.test_ids, stack=True)
@@ -122,7 +122,8 @@ class AggregateLearner():
         # Generate training data and CV object
         X, y, grp = self._prep_data(self.dat, self.tar, self.sam,
                                     func, *args, **kwargs)
-        cv = StratifiedGroupKFold(n_splits=self.cvfolds)
+        cv = StratifiedGroupKFold(n_splits=self.cvfolds, shuffle=True,
+                                  random_state=self.rs)
 
         # Initiate data structure
         perf = {}
@@ -176,6 +177,7 @@ class AggregateLearner():
                 print("Y: ", y_train, y_test)
                 print("G: ", g_train, g_test)
                 print("Accuracy: ", perf['acc'][-1])
+                print("F1: ", perf['f1'][-1])
 
         return tmpclfs, perf
 
@@ -220,6 +222,7 @@ class AggregateLearner():
             print("Y: ", pred, "->", yo)
             print("G: ", grpo)
             print("Test Accuracy: ", oos['acc'])
+            print("Test F1: ", oos['f1'])
         return clf, oos
 
     def _prep_data(self, data, target, group, func, *args, **kwargs):
