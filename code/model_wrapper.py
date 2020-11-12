@@ -21,11 +21,11 @@ def createPipe(clf_name, nsubs):
     n_comp = 20 if nsubs > 70 else 15
     pca = PCA(n_components=n_comp)
     classifs = {
-        "SVM": SVC(kernel='linear', max_iter=1e8, probability=True,
+        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True,
                    class_weight="balanced"),
         "RF": RandomForestClassifier(n_estimators=n_comp*5,
                                      class_weight="balanced"),
-        "LR": LogisticRegression(solver='liblinear', max_iter=1e8,
+        "LR": LogisticRegression(solver='liblinear', max_iter=1e6,
                                  class_weight="balanced")
     }
     pipe = Pipeline(steps=[('pca', pca), (clf_name, classifs[clf_name])])
@@ -126,8 +126,8 @@ def main(args=None):
     clf_op = op.join(ar.outpath, "clfobj_" + ofn + ".pkl")
 
     # Save the classification report to a CSV and the classifier(s) to a pickle
+    clf.performance_report().to_csv(rep_op)
     if ar.save_all:
-        clf.performance_report().to_csv(rep_op)
         with open(clf_op, 'wb') as fhandle:
             pickle.dump(clf, fhandle, pickle.HIGHEST_PROTOCOL)
 
