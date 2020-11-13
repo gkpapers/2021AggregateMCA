@@ -21,7 +21,7 @@ def createPipe(clf_name, nsubs):
     n_comp = 20 if nsubs > 70 else 15
     pca = PCA(n_components=n_comp)
     classifs = {
-        "SVM": SVC(kernel='linear', max_iter=1e6, probability=True,
+        "SVM": SVC(kernel='rbf', max_iter=1e6, probability=True,
                    class_weight="balanced"),
         "RF": RandomForestClassifier(n_estimators=n_comp*5,
                                      class_weight="balanced"),
