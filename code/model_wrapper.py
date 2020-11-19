@@ -21,34 +21,24 @@ from models import AggregateLearner
 
 
 def createPipe(target, nsubs):
-    # Preprocessing
-    def logoffset(x): return np.log10(x+1)
-    log = ('log', FunctionTransformer(logoffset))
-    rnk = ('rnk', FunctionTransformer(rankdata, kw_args={"method":"average",
-                                                         "axis": 1}))
-
     # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
     pca = ('pca', PCA(n_components=n_comp))
 
     # Classifiers
     if target == "age":
-        pre = rnk
         clf = ('lrc', LogisticRegression(class_weight="balanced",
                                          solver='liblinear', max_iter=1e5,
                                          penalty='l2'))
     elif target == "sex":
-        pre = log
         clf = ('gnb', GaussianNB())
     elif target == "bmi":
-        pre = log
         clf = ('rfc', RandomForestClassifier(class_weight="balanced"))
     else:
-        pre = rnk
         clf = ('svc', SVC(class_weight="balanced", probability=True,
                           max_iter=1e5))
 
-    pipe = Pipeline(steps=[pre, pca, clf])
+    pipe = Pipeline(steps=[pca, clf])
     return pipe
 
 
@@ -99,6 +89,7 @@ def main(args=None):
     # Note: "meta" aggregation includes "none"/"jackknife"
     parser.add_argument("aggregation", choices=["ref", "median", "mean",
                                                 "consensus", "mega", "meta"])
+    parser.add_argument("data", choices=["graph", "rankgraph", "loggraph"])
 
     parser.add_argument("--random_seed", "-r", default=42, type=int)
     parser.add_argument("--n_mca", "-n", default=20, type=int)
@@ -125,7 +116,7 @@ def main(args=None):
                            target_id=ar.target,
                            observation_id=obs_id,
                            sample_id='subject',
-                           data_id='graph',
+                           data_id=ar.data,
                            refstr=ref_st,
                            cvfolds=5,
                            oos=0.2,
