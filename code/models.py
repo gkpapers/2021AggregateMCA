@@ -132,7 +132,8 @@ class AggregateLearner():
         perf['pred'] = []
         perf['acc'] = []
         perf['f1'] = []
-        perf['expvar'] = []
+        perf['p_acc'] = []
+        perf['p_f1'] = []
         tmpclfs = []
 
         # In the case of the meta learner, pre-load classifiers from the "none"
@@ -164,21 +165,21 @@ class AggregateLearner():
             perf['pred'] += [pred]
             perf['acc'] += [accuracy_score(y_test, pred)]
             perf['f1'] += [f1_score(y_test, pred)]
-            # For compatible models, grab explained variance
-            try:
-                perf['expvar'] += [np.sum(tmpclf[0].explained_variance_ratio_)]
-            except (TypeError, AttributeError):
-                perf['expvar'] += [None]
 
             tmpclfs += [tmpclf]
             del tmpclf
 
+            f1p, accp = self.performanceP(y_test, perf['f1'][-1],
+                                          perf['acc'][-1])
+            perf['p_f1'] += [f1p]
+            perf['p_acc'] += [accp]
             # Print group splits and performance
             if self.verbose:
                 print("Y: ", y_train, y_test)
                 print("G: ", g_train, g_test)
-                print("Accuracy: ", perf['acc'][-1])
-                print("F1: ", perf['f1'][-1])
+                print("Accuracy: {0} (p <= {1})".format(perf['acc'][-1], accp))
+                print("F1: {0} (p<= {1})".format(perf['f1'][-1], f1p))
+
 
         return tmpclfs, perf
 
@@ -218,12 +219,16 @@ class AggregateLearner():
         oos['comp_acc'] = np.mean([accuracy_score(yo, cp) for cp in comp_preds])
         oos['comp_f1'] = np.mean([f1_score(yo, cp) for cp in comp_preds])
 
+        f1p, accp = self.performanceP(yo, oos['f1'], oos['acc'])
+        oos['p_f1'] = f1p
+        oos['p_acc'] = accp
         # Print performance
         if self.verbose:
             print("Y: ", pred, "->", yo)
             print("G: ", grpo)
-            print("Test Accuracy: ", oos['acc'])
-            print("Test F1: ", oos['f1'])
+            print("Test Accuracy: {0} (p <= {1})".format(oos['acc'], accp))
+            print("Test F1: {0} (p<= {1})".format(oos['f1'], f1p))
+
         return clf, oos
 
     def _prep_data(self, data, target, group, func, *args, **kwargs):
@@ -265,6 +270,21 @@ class AggregateLearner():
             splits[jdx] = [(str(i), c) for i, c in enumerate(splits[jdx])]
         return splits
 
+    def performanceP(self, true, f1, acc, n=1000):
+        np.random.seed(self.rs*2)
+
+        f1_dist = np.array([f1_score(true, np.random.choice(2, len(true)))
+                            for _ in range(n)])
+        f1N = np.sum(f1_dist > f1)
+        f1p = 1.0 * f1N / n
+
+        acc_dist = np.array([accuracy_score(true, np.random.choice(2,
+                                                                   len(true)))
+                    for _ in range(n)])
+        accN = np.sum(acc_dist > acc)
+        accp = 1.0 * accN / n
+        return f1p, accp
+
     def performance_report(self):
         # Turn separate performance structures into simple table
         dflist = []
@@ -273,10 +293,14 @@ class AggregateLearner():
                 # If we have a list of lists of acc/f1 values, flatten them
                 ac = [vvv for vv in v for vvv in vv['acc']]
                 f1 = [vvv for vv in v for vvv in vv['f1']]
+                pac = [vvv for vv in v for vvv in vv['p_acc']]
+                pf1 = [vvv for vv in v for vvv in vv['p_f1']]
 
                 # If we have a list of test performance values, average them
                 act = np.mean([vv['acc'] for vv in self.oos_perf[k]])
                 f1t = np.mean([vv['f1'] for vv in self.oos_perf[k]])
+                pact = np.mean([vv['p_acc'] for vv in self.oos_perf[k]])
+                pf1t = np.mean([vv['p_f1'] for vv in self.oos_perf[k]])
 
                 # Treat the composite average test performance the same as above
                 cact = np.mean([vv['comp_acc'] for vv in self.oos_perf[k]])
@@ -285,8 +309,14 @@ class AggregateLearner():
             else:
                 ac = v['acc']
                 f1 = v['f1']
+                pac = v['p_acc']
+                pf1 = v['p_f1']
+
                 act = self.oos_perf[k]["acc"]
                 f1t = self.oos_perf[k]["f1"]
+                pact = self.oos_perf[k]["p_acc"]
+                pf1t = self.oos_perf[k]["p_f1"]
+
                 cact = self.oos_perf[k]["comp_acc"]
                 cf1t = self.oos_perf[k]["comp_f1"]
 
@@ -296,15 +326,19 @@ class AggregateLearner():
                     "aggregation": k,
                     "acc": np.mean(ac),
                     "f1": np.mean(f1),
+                    "p_acc": np.mean(pac),
+                    "p_f1": np.mean(pf1),
                     "test_acc": act,
                     "test_f1": f1t,
+                    "p_test_acc": pact,
+                    "p_test_f1": pf1t,
                     "test_mean_acc": cact,
                     "test_mean_f1": cf1t,
                     "n_models": len(ac)
                 }
             ]
 
-            del ac, f1, act, f1t
+            del ac, f1, act, f1t, pac, pf1, pact, pf1t
         return pd.DataFrame.from_dict(dflist)
 
     def _grab(self, want, sweep, exclude, stack=False):
