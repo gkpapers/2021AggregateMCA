@@ -4,31 +4,51 @@ from argparse import ArgumentParser
 import os.path as op
 import pickle
 
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 
 from pandas.core.computation.ops import UndefinedVariableError
+from scipy.stats import rankdata
 import pandas as pd
 import numpy as np
 
 from models import AggregateLearner
 
 
-def createPipe(clf_name, nsubs):
+def createPipe(target, nsubs):
+    # Preprocessing
+    def logoffset(x): return np.log10(x+1)
+    log = ('log', FunctionTransformer(logoffset))
+    rnk = ('rnk', FunctionTransformer(rankdata, kw_args={"method":"average",
+                                                         "axis": 1}))
+
+    # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
-    pca = PCA(n_components=n_comp)
-    classifs = {
-        "SVM": SVC(kernel='rbf', max_iter=1e6, probability=True,
-                   class_weight="balanced"),
-        "RF": RandomForestClassifier(n_estimators=n_comp*5,
-                                     class_weight="balanced"),
-        "LR": LogisticRegression(solver='liblinear', max_iter=1e6,
-                                 class_weight="balanced")
-    }
-    pipe = Pipeline(steps=[('pca', pca), (clf_name, classifs[clf_name])])
+    pca = ('pca', PCA(n_components=n_comp))
+
+    # Classifiers
+    if target == "age":
+        pre = rnk
+        clf = ('lrc', LogisticRegression(class_weight="balanced",
+                                         solver='liblinear', max_iter=1e5,
+                                         penalty='l2'))
+    elif target == "sex":
+        pre = log
+        clf = ('gnb', GaussianNB())
+    elif target == "bmi":
+        pre = log
+        clf = ('rfc', RandomForestClassifier(class_weight="balanced"))
+    else:
+        pre = rnk
+        clf = ('svc', SVC(class_weight="balanced", probability=True,
+                          max_iter=1e5))
+
+    pipe = Pipeline(steps=[pre, pca, clf])
     return pipe
 
 
@@ -79,7 +99,6 @@ def main(args=None):
     # Note: "meta" aggregation includes "none"/"jackknife"
     parser.add_argument("aggregation", choices=["ref", "median", "mean",
                                                 "consensus", "mega", "meta"])
-    parser.add_argument("classifier", choices=["RF", "SVM", "LR"])
 
     parser.add_argument("--random_seed", "-r", default=42, type=int)
     parser.add_argument("--n_mca", "-n", default=20, type=int)
@@ -91,7 +110,7 @@ def main(args=None):
 
     # Load dataset and create classifier
     df = pd.read_hdf(ar.dset)
-    pipe = createPipe(ar.classifier, len(df['subject'].unique()))
+    pipe = createPipe(ar.target, len(df['subject'].unique()))
 
     # If we're doing an MCA_sub experiment, subsample the dataframe.
     df = sampleSimulations(df, ar.experiment, ar.random_seed, ar.n_mca)
@@ -116,11 +135,11 @@ def main(args=None):
                            verbose=ar.verbose)
 
     # Fit the model
-    clf.fit(aggregation=ar.aggregation)
+    oos = clf.fit(aggregation=ar.aggregation)
 
     # Create output file names
     experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.target,
-                         ar.classifier, ar.random_seed]
+                         ar.random_seed]
     ofn = "_".join(str(e) for e in experiment_pieces)
     rep_op = op.join(ar.outpath, "report_" + ofn + ".csv")
     clf_op = op.join(ar.outpath, "clfobj_" + ofn + ".pkl")
