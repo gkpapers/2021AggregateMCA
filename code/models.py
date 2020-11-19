@@ -117,6 +117,7 @@ class AggregateLearner():
         self.clf[aggregation] = clf
         self.perf[aggregation] = perf
         self.oos_perf[aggregation] = oos
+        return oos
 
     def _simple_fit(self, func, meta=False, *args, **kwargs):
         # Generate training data and CV object
@@ -166,7 +167,7 @@ class AggregateLearner():
             # For compatible models, grab explained variance
             try:
                 perf['expvar'] += [np.sum(tmpclf[0].explained_variance_ratio_)]
-            except TypeError:
+            except (TypeError, AttributeError):
                 perf['expvar'] += [None]
 
             tmpclfs += [tmpclf]
