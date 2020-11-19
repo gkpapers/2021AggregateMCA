@@ -130,7 +130,7 @@ def main(args=None):
 
     # Create output file names
     experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.target,
-                         ar.random_seed]
+                         ar.data, ar.random_seed]
     ofn = "_".join(str(e) for e in experiment_pieces)
     rep_op = op.join(ar.outpath, "report_" + ofn + ".csv")
     clf_op = op.join(ar.outpath, "clfobj_" + ofn + ".pkl")
