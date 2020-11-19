@@ -68,10 +68,10 @@ def sampleSimulations(df, experiment, rs, n_mca, rf="ref"):
     for idx, sub in enumerate(df['subject'].unique()):
         # Grab a temporary dataframe for each subject
         tdf = df.query("subject == {0} and simulation != '{1}'".format(sub, rf))
+        # First check if we are/can actually subsample this dataset
+        n_sims = len(tdf['simulation'].unique())
+        n_samples = np.min([n_mca, n_sims])
         if idx == 0:
-            # First check if we are/can actually subsample this dataset
-            n_sims = len(tdf['simulation'].unique())
-            n_samples = np.min([n_mca, n_sims])
             # If we aren't subsampling at all, leave
             if n_samples == n_sims:
                 newdf = df
