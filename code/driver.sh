@@ -30,6 +30,7 @@ fi
 
 nmca="20 18 16 14 12 10 7 5 2"
 aggs="ref meta mega mean median consensus"
+graphs="graph rankgraph loggraph"
 
 for t in ${targets}
 do
@@ -49,6 +50,7 @@ source /home/gkiar/code/env/aggregate/bin/activate
 cd ${bp}
 
 exp="${e}"
+graphs="${graphs}"
 
 if [[ \${exp} != "mca" ]]
 then
@@ -56,20 +58,23 @@ then
 else
   agg_iter="${aggs}"
 fi
-for a in \${agg_iter}
+for g in \${graphs}
 do
-  if [[ \${exp} == "mca" ]]
-  then
-    echo $e $t \$a $n &>> ${logf}
-    (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} --n_mca ${n} --verbose) &>>${logf}
-  else
-    echo $e $t \$a &>> ${logf}
-    (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} --verbose) &>>${logf}
-  fi
+  for a in \${agg_iter}
+  do
+    if [[ \${exp} == "mca" ]]
+    then
+      echo $e $t \$a \${g} $n &>> ${logf}
+      (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} \${g} --n_mca ${n} --verbose) &>>${logf}
+    else
+      echo $e $t \$a \${g} &>> ${logf}
+      (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} \${g} --verbose) &>>${logf}
+    fi
+  done
 done
 TMP
       chmod +x ${jobp}exec_${t}_${n}_${e}.sh
-      # sbatch ${jobp}exec_${t}_${n}_${e}.sh
+      sbatch ${jobp}exec_${t}_${n}_${e}.sh
     done
   done
 done
