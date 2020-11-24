@@ -30,7 +30,7 @@ fi
 
 nmca="20 18 16 14 12 10 7 5 2"
 aggs="ref meta mega mean median consensus"
-graphs="graph rankgraph loggraph"
+graphs="graph rankgraph loggraph zgraph"
 dimred="pca fa"
 
 for t in ${targets}
