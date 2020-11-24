@@ -31,15 +31,18 @@ fi
 nmca="20 18 16 14 12 10 7 5 2"
 aggs="ref meta mega mean median consensus"
 graphs="graph rankgraph loggraph"
+dimred="pca fa"
 
 for t in ${targets}
 do
   for n in ${nmca}
   do
-    for e in ${exps}
+    for d in ${dimred}
     do
-      logf="${jobp}log_${DSET}_${t}_${n}_${e}.txt"
-      cat << TMP > ${jobp}exec_${t}_${n}_${e}.sh
+      for e in ${exps}
+      do
+        logf="${jobp}log_${DSET}_${t}_${n}_${e}_${d}.txt"
+        cat << TMP > ${jobp}exec_${t}_${n}_${e}_${d}.sh
 #!/bin/bash
 #SBATCH --time ${timest}
 #SBATCH --mem 16G
@@ -64,17 +67,18 @@ do
   do
     if [[ \${exp} == "mca" ]]
     then
-      echo $e $t \$a \${g} $n &>> ${logf}
-      (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} \${g} --n_mca ${n} --verbose) &>>${logf}
+      echo $e $t $d \$a \${g} $n &>> ${logf}
+      (time python model_wrapper.py ${resd} ${dset} ${e} ${d} ${t} \${a} \${g} --n_mca ${n} --verbose) &>>${logf}
     else
-      echo $e $t \$a \${g} &>> ${logf}
-      (time python model_wrapper.py ${resd} ${dset} ${e} ${t} \${a} \${g} --verbose) &>>${logf}
+      echo $e $t $d \$a \${g} &>> ${logf}
+      (time python model_wrapper.py ${resd} ${dset} ${e} ${d} ${t} \${a} \${g} --verbose) &>>${logf}
     fi
   done
 done
 TMP
-      chmod +x ${jobp}exec_${t}_${n}_${e}.sh
-      sbatch ${jobp}exec_${t}_${n}_${e}.sh
+        chmod +x ${jobp}exec_${t}_${n}_${e}_${d}.sh
+        sbatch ${jobp}exec_${t}_${n}_${e}_${d}.sh
+      done
     done
   done
 done
