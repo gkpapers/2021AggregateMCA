@@ -34,7 +34,7 @@ def createPipe(embed, target, nsubs):
     elif target == "sex":
         clf = ('knn', KNeighborsClassifier(n_neighbors=int(nsubs*0.1)))
     else:
-        clf = ('ada', RandomForestClassifier(class_weight="balanced"))
+        clf = ('rfc', RandomForestClassifier(class_weight="balanced"))
 
     pipe = Pipeline(steps=[emb, clf])
     return pipe
