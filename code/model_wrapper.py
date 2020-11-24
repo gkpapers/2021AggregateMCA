@@ -4,10 +4,7 @@ from argparse import ArgumentParser
 import os.path as op
 import pickle
 
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.naive_bayes import GaussianNB
+from sklearn.cluster import FeatureAgglomeration
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
@@ -20,25 +17,18 @@ import numpy as np
 from models import AggregateLearner
 
 
-def createPipe(target, nsubs):
+def createPipe(embed, nsubs):
     # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
-    pca = ('pca', PCA(n_components=n_comp))
-
-    # Classifiers
-    if target == "age":
-        clf = ('lrc', LogisticRegression(class_weight="balanced",
-                                         solver='liblinear', max_iter=1e5,
-                                         penalty='l2'))
-    elif target == "sex":
-        clf = ('gnb', GaussianNB())
-    elif target == "bmi":
-        clf = ('rfc', RandomForestClassifier(class_weight="balanced"))
+    if embed == "pca":
+        emb = ('pca', PCA(n_components=n_comp))
     else:
-        clf = ('svc', SVC(class_weight="balanced", probability=True,
-                          max_iter=1e5))
+        emb = ('fa', FeatureAgglomeration(n_clusters=n_comp))
 
-    pipe = Pipeline(steps=[pca, clf])
+    # Classifier
+    clf = ('svc', SVC(class_weight="balanced", probability=True, max_iter=1e6))
+
+    pipe = Pipeline(steps=[emb, clf])
     return pipe
 
 
@@ -84,14 +74,15 @@ def main(args=None):
     parser.add_argument("outpath", help="Directory for storing the results.")
     parser.add_argument("dset", help="Path to H5 input data file.")
     parser.add_argument("experiment", choices=["mca", "subsample", "session"])
-    parser.add_argument("target", choices=["age", "sex", "cholesterol",
-                                           "rel_vo2max", "bmi"])
+    parser.add_argument("embedding", choices=["pca", "fa"])
+    parser.add_argument("target", choices=["age", "sex", "bmi"])
     # Note: "meta" aggregation includes "none"/"jackknife"
     parser.add_argument("aggregation", choices=["ref", "median", "mean",
                                                 "consensus", "mega", "meta"])
-    parser.add_argument("data", choices=["graph", "rankgraph", "loggraph"])
+    parser.add_argument("data", choices=["graph", "rankgraph",
+                                         "loggraph", "zgraph"])
 
-    parser.add_argument("--random_seed", "-r", default=42, type=int)
+    parser.add_argument("--random_seed", "-r", default=41, type=int)
     parser.add_argument("--n_mca", "-n", default=20, type=int)
     parser.add_argument("--save_all", "-s", default=False, type=bool)
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -101,7 +92,7 @@ def main(args=None):
 
     # Load dataset and create classifier
     df = pd.read_hdf(ar.dset)
-    pipe = createPipe(ar.target, len(df['subject'].unique()))
+    pipe = createPipe(ar.embedding, len(df['subject'].unique()))
 
     # If we're doing an MCA_sub experiment, subsample the dataframe.
     df = sampleSimulations(df, ar.experiment, ar.random_seed, ar.n_mca)
@@ -130,7 +121,7 @@ def main(args=None):
 
     # Create output file names
     experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.target,
-                         ar.data, ar.random_seed]
+                         ar.data, ar.embedding, ar.random_seed]
     ofn = "_".join(str(e) for e in experiment_pieces)
     rep_op = op.join(ar.outpath, "report_" + ofn + ".csv")
     clf_op = op.join(ar.outpath, "clfobj_" + ofn + ".pkl")
