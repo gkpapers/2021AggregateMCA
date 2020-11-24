@@ -20,11 +20,11 @@ mkdir -p ${resd} ${jobp}
 if [[ ${DSET} == "D100" ]]
 then
   exps="mca"
-  targets="bmi age sex rel_vo2max"
+  targets="bmi age sex"
   timest="02:00:00"
 else
   exps="mca session subsample"
-  targets="bmi age sex rel_vo2max"
+  targets="bmi age sex"
   timest="00:30:00"
 fi
 
