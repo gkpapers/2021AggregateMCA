@@ -4,6 +4,8 @@ from argparse import ArgumentParser
 import os.path as op
 import pickle
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import FeatureAgglomeration
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
@@ -17,7 +19,7 @@ import numpy as np
 from models import AggregateLearner
 
 
-def createPipe(embed, nsubs):
+def createPipe(embed, target, nsubs):
     # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
     if embed == "pca":
@@ -26,7 +28,13 @@ def createPipe(embed, nsubs):
         emb = ('fa', FeatureAgglomeration(n_clusters=n_comp))
 
     # Classifier
-    clf = ('svc', SVC(class_weight="balanced", probability=True, max_iter=1e6))
+    if target == "age":
+        clf = ('svc', SVC(class_weight="balanced", probability=True,
+                          max_iter=1e6))
+    elif target == "sex":
+        clf = ('knn', KNeighborsClassifier(n_neighbors=int(nsubs*0.1)))
+    else:
+        clf = ('ada', RandomForestClassifier(class_weight="balanced"))
 
     pipe = Pipeline(steps=[emb, clf])
     return pipe
@@ -92,7 +100,7 @@ def main(args=None):
 
     # Load dataset and create classifier
     df = pd.read_hdf(ar.dset)
-    pipe = createPipe(ar.embedding, len(df['subject'].unique()))
+    pipe = createPipe(ar.embedding, ar.target, len(df['subject'].unique()))
 
     # If we're doing an MCA_sub experiment, subsample the dataframe.
     df = sampleSimulations(df, ar.experiment, ar.random_seed, ar.n_mca)
