@@ -4,7 +4,8 @@ from argparse import ArgumentParser
 import os.path as op
 import pickle
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import FeatureAgglomeration
 from sklearn.decomposition import PCA
@@ -19,7 +20,7 @@ import numpy as np
 from models import AggregateLearner
 
 
-def createPipe(embed, target, nsubs):
+def createPipe(embed, classif, nmca, nsubs):
     # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
     if embed == "pca":
@@ -27,16 +28,22 @@ def createPipe(embed, target, nsubs):
     else:
         emb = ('fa', FeatureAgglomeration(n_clusters=n_comp))
 
-    # Classifier
-    if target == "age":
-        clf = ('svc', SVC(class_weight="balanced", probability=True,
-                          max_iter=1e6))
-    elif target == "sex":
-        clf = ('knn', KNeighborsClassifier(n_neighbors=int(nsubs*0.1)))
-    else:
-        clf = ('rfc', RandomForestClassifier(class_weight="balanced"))
+    # Classifiers
+    clfs = {'svc': ('svc',
+                    SVC(class_weight="balanced",
+                        probability=True, max_iter=1e6)),
+            'knn': ('knn',
+                    KNeighborsClassifier(n_neighbors=int(nmca*nsubs*0.1))),
+            'rfc': ('rfc',
+                    RandomForestClassifier(class_weight="balanced")),
+            'ada': ('ada',
+                    AdaBoostClassifier()),
+            'lrc': ('lrc',
+                    LogisticRegression(class_weight="balanced",
+                                       solver='liblinear', max_iter=1e6))
+            }
 
-    pipe = Pipeline(steps=[emb, clf])
+    pipe = Pipeline(steps=[emb, clfs[classif]])
     return pipe
 
 
@@ -53,12 +60,16 @@ def sampleSimulations(df, experiment, rs, n_mca, rf="ref"):
         except UndefinedVariableError:
             pass  # If there aren't sessions or subsamples, use the full df
 
+    min_nsamples = n_mca
     for idx, sub in enumerate(df['subject'].unique()):
         # Grab a temporary dataframe for each subject
         tdf = df.query("subject == {0} and simulation != '{1}'".format(sub, rf))
         # First check if we are/can actually subsample this dataset
         n_sims = len(tdf['simulation'].unique())
         n_samples = np.min([n_mca, n_sims])
+        if n_samples < min_nsamples:
+            min_nsamples = n_samples
+
         if idx == 0:
             # If we aren't subsampling at all, leave
             if n_samples == n_sims:
@@ -74,7 +85,7 @@ def sampleSimulations(df, experiment, rs, n_mca, rf="ref"):
             newdf = pd.concat([newdf, tdf.sample(n=n_samples, axis=0)])
 
     newdf.reset_index(inplace=True)
-    return newdf
+    return newdf, min_nsamples
 
 
 def main(args=None):
@@ -83,7 +94,8 @@ def main(args=None):
     parser.add_argument("dset", help="Path to H5 input data file.")
     parser.add_argument("experiment", choices=["mca", "subsample", "session"])
     parser.add_argument("embedding", choices=["pca", "fa"])
-    parser.add_argument("target", choices=["age", "sex", "bmi"])
+    parser.add_argument("classifier", choices=["knn", "svc", "lrc",
+                                               "rfc", "ada"])
     # Note: "meta" aggregation includes "none"/"jackknife"
     parser.add_argument("aggregation", choices=["ref", "median", "mean",
                                                 "consensus", "mega", "meta"])
@@ -98,12 +110,15 @@ def main(args=None):
     # Parse arguments, and extract details/setup experiment
     ar = parser.parse_args() if args is None else parser.parse_args(args)
 
-    # Load dataset and create classifier
-    df = pd.read_hdf(ar.dset)
-    pipe = createPipe(ar.embedding, ar.target, len(df['subject'].unique()))
 
-    # If we're doing an MCA_sub experiment, subsample the dataframe.
-    df = sampleSimulations(df, ar.experiment, ar.random_seed, ar.n_mca)
+    # Load dataset, and, if we're doing an MCA_sub experiment, subsample it
+    df = pd.read_hdf(ar.dset)
+    df, minsamples = sampleSimulations(df, ar.experiment, ar.random_seed,
+                                       ar.n_mca)
+
+    # Create classifier
+    pipe = createPipe(ar.embedding, ar.classifier, minsamples,
+                      len(df['subject'].unique()))
 
     # Set some parameters based on experiment type
     obs_id = "simulation" if ar.experiment == 'mca' else ar.experiment
@@ -112,7 +127,7 @@ def main(args=None):
 
     # Create aggregator object for the designed experiment
     clf = AggregateLearner(df, pipe,
-                           target_id=ar.target,
+                           target_id="age",
                            observation_id=obs_id,
                            sample_id='subject',
                            data_id=ar.data,
@@ -128,7 +143,7 @@ def main(args=None):
     oos = clf.fit(aggregation=ar.aggregation)
 
     # Create output file names
-    experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.target,
+    experiment_pieces = [ar.experiment, ar.n_mca, ar.aggregation, ar.classifier,
                          ar.data, ar.embedding, ar.random_seed]
     ofn = "_".join(str(e) for e in experiment_pieces)
     rep_op = op.join(ar.outpath, "report_" + ofn + ".csv")
