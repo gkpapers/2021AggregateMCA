@@ -20,7 +20,7 @@ import numpy as np
 from models import AggregateLearner
 
 
-def createPipe(embed, classif, nmca, nsubs):
+def createPipe(embed, classif, nmca, aggregation, nsubs):
     # Dimension Reduction
     n_comp = 20 if nsubs > 70 else 15
     if embed == "pca":
@@ -29,11 +29,12 @@ def createPipe(embed, classif, nmca, nsubs):
         emb = ('fa', FeatureAgglomeration(n_clusters=n_comp))
 
     # Classifiers
+    neib = int(nmca*nsubs*0.1) if aggregation == "mega" else int(nsubs*0.1)
     clfs = {'svc': ('svc',
                     SVC(class_weight="balanced",
                         probability=True, max_iter=1e6)),
             'knn': ('knn',
-                    KNeighborsClassifier(n_neighbors=int(nmca*nsubs*0.1))),
+                    KNeighborsClassifier(n_neighbors=neib)),
             'rfc': ('rfc',
                     RandomForestClassifier(class_weight="balanced")),
             'ada': ('ada',
@@ -117,7 +118,7 @@ def main(args=None):
                                        ar.n_mca)
 
     # Create classifier
-    pipe = createPipe(ar.embedding, ar.classifier, minsamples,
+    pipe = createPipe(ar.embedding, ar.classifier, ar.aggregation, minsamples,
                       len(df['subject'].unique()))
 
     # Set some parameters based on experiment type
