@@ -20,7 +20,7 @@
 %	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[fleqn,10pt]{SelfArx} % Document font size and equations flushed left
+\documentclass[10pt]{SelfArx} % Document font size and equations flushed left
 
 \usepackage[english]{babel} % Specify a different language here - english by default
 
@@ -61,7 +61,7 @@
 \JournalInfo{$ $ } % Journal information
 \Archive{Pre-print} % Additional notes (e.g. copyright, DOI, review/research article)
 
-\PaperTitle{Numerical Instabilities in Analytical Pipelines Lead to Large and Meaningful Variability in Brain Networks} % Article title
+\PaperTitle{Perturbation-Enabled Data Augmentation Improves the Generalizability of Classifiers in Network Neuroscience} % Article title
 
 \Authors{Gregory Kiar\textsuperscript{1}, Alan C. Evans\textsuperscript{1}, Tristan Glatard\textsuperscript{2}} % Authors
 \affiliation{\textsuperscript{1}\textit{Montréal Neurological Institute, McGill University, Montréal, QC, Canada}}
@@ -98,7 +98,7 @@ performance, suggesting that even minimally perturbing a dataset reduces bias in
 %----------------------------------------------------------------------------------------
 %	ARTICLE CONTENTS
 %----------------------------------------------------------------------------------------
-
+\pagestyle{fancy}
 \section*{Introduction}
 words
 
@@ -239,6 +239,15 @@ and classifier models, there were $2,200$ and $2,520$ models trained and evaluat
 
 \subsection*{Training \& Evaluation}
 
+\begin{figure*}[hbt]\centering
+\includegraphics[width=\linewidth]{figures/1.pdf}
+\caption{Relative change in classifier performance with respect to classifier type and dataset sampling strategies as
+measured by change in F1 score on the validation set (top) or test set (middle), as well as the generalizability of
+performance (bottom). Each star annotation indicates an order of magnitude of statistically significant change in
+performance, with those in black or red indicating an increase or decrease due to resampling, respectively.}
+\label{fig:overall_performance}
+\end{figure*}
+
 Prior to training models on the brain networks, $20\%$ of subjects were excluded from each dataset for use as an
 out-of-sample test dataset for all experiments. With the remaining $80\%$ of subjects, cross validation was performed
 following a stratified grouped $k$-fold approach ($k=5$). In this approach, samples were divided into training and
@@ -247,62 +256,93 @@ conditional upon all observations from the same individual or network falling up
 This resulted in $5$ fold-trained classifiers per configuration, each trained on $64\%$ of the samples and validated on
 $16\%$, prior to each being tested on the remaining $20\%$ of held-out samples.
 
-Classifiers were evaluated using F1 score, a standard measure for evaluating classification performance, especially in
-an imbalanced setting. Performance on the test set was measured for each configuration both through the mean of each
-fold-trained classifier and through a probability-based voting classifier. The voting classifier combined individual
-estimators and made predictions based on the net probability of class membership, forming higher fidelity out-of-sample
-predictions than any independent estimator. Importantly, this was done so that the trained estimators could be
-meaningfully operationalized and applied to arbitrary new samples in practice. The performance of the voting classifier
-was similarly evaluated through F1 score.
+Classifiers were primarily evaluated on both the validation and test sets using F1 score, a standard measure for
+evaluating classification performance. The generalizability of predictions was defined as:
+
+\begin{equation}
+G = 1 - \lvert F1_{test} - F1_{validation} \rvert
+\label{eq:gen}
+\end{equation}
+
+where a score of $1$ (maximum) indicates the equivalent performance across both the validation and test sets, and a
+lower score (minimum of $0$) indicates inconsistent performance. The absolute value of the difference in performance
+was used in Eq.~\ref{eq:gen} resulting in a score which penalizes over-performance similarly to under-performance, as
+all inconsistency is undesirable when applying a classifier out-of-sample.
+
+Differences in F1 score and Generalizability were used to measure the change in performance between the reference and
+other dataset sampling techniques, and statistical comparisons were made using the Wilcoxon Signed-Rank Test.
 
 
 %------------------------------------------------
 \section*{Results}
-words
+complete table for each of measure and model performance table, as well as and complete significance table, can be
+found in the dataset available through GitHub/Zenodo.
 
-\subsection*{TODO: come up with result title}
-\begin{figure*}[hbt]\centering
-\includegraphics[width=\linewidth]{figures/1.pdf}
-\caption{Relative change in classifier performance (F1 score) with respect to classifier type and dataset sampling
-strategies as measured by performance on the validation set (top), test set (middle), as well as the generalizability
-of performance across the two sets (bottom). Each data point represents performance from a single model, number of MCA
-simulations, preprocessing strategy, and dimensionality reduction technique. Each star annotation indicates an order of
-magnitude of statistically significant change in performance, with those in black or red indicating an increase or
-decrease in performance, respectively. The baseline performance ranged from $0.66$ to $0.88$ across all models. This
-figure shows that while support vector machine and logistic regression classifiers learn the validation set more
-effectively, their improved performance fails to improve generalizability. In contrast, AdaBoost classifiers do not
-improve on the validation set but form more generalizable predictions on the test set.}
-\label{fig:overall_performance}
-\end{figure*}
+\subsection*{Data Resampling Improves Classification}
 
-\subsection*{Data Resampling Increases the Predictability of Performance}
+Figure 1:
+\begin{itemize}
+\item svm and lrc performance improve on validation, test, and increase their generalizability. This global increase
+means that not only did the performance increase on both train and test, but the discrepancy between the performance
+on each was reduced.
+\item knn and adaboost both have minimal change to or reduced performance on the training set, though better
+performance on test, suggesting a reduction in overfitting. In the case of knn this leads to an increased
+generalizability, though in Adaboost it does not; the latter suggests a shift from under-performance to
+over-performance on the test set, rather than a more generalized performance.
+\item the reduced performance from knn and mega is likely due to the hyper-parameterization of the model, in which a
+number of neighbours must be specified and this value was scaled linearly with the number of MCA samples. It is
+possible that a better method exists for scaling the number of neighbours in this model, eliminating or reversing this
+effect.
+\item rf, the simple ensemble model, doesn't experience a change in performance or with dataset sampling methods, but
+the resulting models are less generalizable, meaning there is a larger discrepancy between validation and test
+performance.
+\item while mega and meta have a slight edge, there is no significant difference in sampling approaches.
+\item While certain combinations of preprocessing, dimensionality reduction, and classifiers performed better than
+others, there was no significant relationship between any dataset resampling methods and preprocessing or
+dimensionality reduction techniques.
+\end{itemize}
+
+\subsection*{Model Improvement Scales With Generalizability}
 \begin{figure*}[bht!]\centering
 \includegraphics[width=\linewidth]{figures/2.pdf}
-\caption{Change in the generalizability of classifiers with respect to the reference. Each data point represents the
-mean change in generalizability for all models of the same type (i.e. preprocessing and dimensionality reduction) for a
-given classifier and dataset sampling strategy. In order to have predictable performance on unseen samples, the target
-generalizability is $0$, meaning that performance on the validation and testing set is equivalent. Models with negative
-generalizability underperform, and those with positive generalizability overperform. This figure shows that
-perturbation-enabled dataset resampling improves the generalizability of all models, shifting both underperforming and
-overperforming models towards predictable performance.}
+\caption{Change in the generalizability of classifiers with respect to the reference generalizability. Each data point
+represents the mean change in generalizability for all models using the same preprocessing and dimensionality
+reduction techniques for a given classifier and dataset sampling strategy.}
 \label{fig:change_in_gen}
 \end{figure*}
 
+\begin{itemize}
+\item Perturbation-enabled dataset resampling improves generalizability
+\item Less generalizable models improve more
+\item With the excecption of KNN, for which all models already exhibited high performance, there was a significant
+relationship between the baseline generalizability and the improvement from perturbations.
+\item The models which decrease in generalizability all have high generalizability scores ($>0.935$), and this is
+likely the paired result of "removing good luck" while the other is "removing bad luck"
+\end{itemize}
 
-\subsection*{Data Resampling Benefit is Invariant To Number of Simulations}
+
+\subsection*{Mega-Analysis Improves With Samples}
 
 \begin{figure*}[ht]\centering
 \includegraphics[width=\linewidth]{figures/3.pdf}
-\caption{Variability in the performance of dataset sampling strategies with respect to the number of MCA simulations
-used. Each number of simulations was sampled a single time, to avoid artificial skewing of the dataset due to the
-inclusion of "more" or "less" meaningful samples; a single drawing of each split mimics a true perturbation experiment
-context. This figure shows that while we previously noted an increase in the generalizability when resampling, there is
-no relationship between the number of independent samples used and performance.}
+\caption{The generalizability of classifiers using each dataset sampling technique with respect to the number of MCA
+simulations. Each number of simulations was sampled a single time, to avoid artificial skewing of the dataset due to
+the inclusion of ``higher'' or ``lower'' quality samples; a single drawing of each split mimics a true perturbation
+experiment context.}
 \label{fig:nsamples}
 \end{figure*}
- 
+
+\begin{itemize}
+\item While we previously note an increase in the generalizability when resampling, there is no relationship between
+the number of independent samples used and performance in most cases,
+\item however, in the case of the mega-analytic approach, there is a significant relationship between the number of
+samples used and generalizability.
+\item mega is the only approach that changes the number of samples being used by the classifiers, and this relationship
+is consistent to an increase one would expect when increasing the number of samples in their experiment.
+\end{itemize}
 
 \section*{Discussion}
+
 - class imbalance... “Data is expensive, we don’t want to waste it, and biological oversampling (without a technique such as MCA) is hard… together, that’s why we went with balancing weights over undersampling”
 
 - consider MCA as an oversampling technique which does not compromise the quality of samples or rely on interpolation in high dimensional data
