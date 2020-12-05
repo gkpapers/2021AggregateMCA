@@ -304,14 +304,6 @@ The support vector machine and logistic regression models improve across each of
 dataset sampling techniques, meaning that the addition of the MCA-perturbed samples improves the training, testing, and
 overall generalizability of the classifiers.
 
-\begin{figure*}[bht!]\centering
-\includegraphics[width=\linewidth]{figures/2.pdf}
-\caption{Change in the generalizability of classifiers with respect to the reference generalizability. Each data point
-represents the mean change in generalizability for all models using the same preprocessing and dimensionality
-reduction techniques for a given classifier and dataset sampling strategy.}
-\label{fig:change_in_gen}
-\end{figure*}
-
 Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experience minimal change in validation and often see
 their perfomance decline. However, the improvement of these classifiers on the test set suggests that resampling
 reduced overfitting in these classifiers. In the case of KNN, this translates to imrpoved generalizability, while in
@@ -332,6 +324,19 @@ addition of more data does not improve performance further. While AdaBoost is al
 training of models based on sample difficulty allows for the added variance in those samples to play an increasingly
 central role in the construction of class relationships.
 
+\begin{figure*}[bht!]\centering
+\includegraphics[width=\linewidth]{figures/2a.pdf}
+\includegraphics[width=\linewidth]{figures/2b.pdf}
+\caption{Relationship between generalizability and resampling. Top: change in the generalizability of classifiers with
+respect to the reference generalizability. Each data point represents the mean change in generalizability for all
+models using the same preprocessing and dimensionality reduction techniques for a given classifier and dataset sampling
+strategy. Bottom: contour density distributions of generalizability and F1 scores across all models for both reference
+and resampled training.
+% The vertical lines for each plot represent the mean generalizability for the associated models.
+}
+\label{fig:change_in_gen}
+\end{figure*}
+
 Across all classifier types, it was found that both mega- and meta-analytic approaches outperformed other methods
 slightly, though this was not statistically significant. Additionally, while certain combinations of preprocessing,
 dimensionality reduction, and classifiers performed more harmoniously than others, there was no significant
@@ -340,19 +345,7 @@ technique. The above results show that dataset augmentation through MCA-perturbe
 way to improve the performance and generalizability of non-ensemble classifiers tasked with modeling brain-phenotype
 relationships, both within and out of sample.
 
-\subsection*{Model Improvement Scales With Generalizability}
-
-\begin{itemize}
-\item Perturbation-enabled dataset resampling improves generalizability
-\item Less generalizable models improve more
-\item With the excecption of KNN, for which all models already exhibited high performance, there was a significant
-relationship between the baseline generalizability and the improvement from perturbations.
-\item The models which decrease in generalizability all have high generalizability scores ($>0.935$), and this is
-likely the paired result of "removing good luck" while the other is "removing bad luck"
-\end{itemize}
-
-
-\subsection*{Mega-Analysis Improves With Samples}
+\subsection*{Resampling Leads to Consistent Performance}
 
 \begin{figure*}[ht]\centering
 \includegraphics[width=\linewidth]{figures/3.pdf}
@@ -360,42 +353,96 @@ likely the paired result of "removing good luck" while the other is "removing ba
 simulations. Each number of simulations was sampled a single time, to avoid artificial skewing of the dataset due to
 the inclusion of ``higher'' or ``lower'' quality samples; a single drawing of each split mimics a true perturbation
 experiment context.}
-\label{fig:nsamples}
+\label{fig:nmca}
 \end{figure*}
 
-\begin{itemize}
-\item While we previously note an increase in the generalizability when resampling, there is no relationship between
-the number of independent samples used and performance in most cases,
-\item however, in the case of the mega-analytic approach, there is a significant relationship between the number of
-samples used and generalizability.
-\item mega is the only approach that changes the number of samples being used by the classifiers, and this relationship
-is consistent to an increase one would expect when increasing the number of samples in their experiment.
-\end{itemize}
+To beter characterize the the benefit of resampling, the relationship between the magnitude of improvement and the
+baseline performance of the classifer were further explored (Figure~\ref{fig:change_in_gen}). We found that the
+increase in the generalizability of a classifier was inversely related to the baseline generalizability
+(Figure~\ref{fig:change_in_gen}; top). In other words, the less generalizable a classifier was originally, the more its
+generalizability improved (significant at $p < 0.05$ for all dataset sampling strategies and classifier other than
+KNN). There were several situations in which the generalizability of models were noted to decrease, however, though
+this only occurred for models with high generalizability scores (all $>0.935$). Importantly, the relative change in
+generalizability shifts scores towards a single ``mode'', suggesting a less biased estimate of the true
+generalizability of performance on the task, and mitigating both under- and over-performance due to chance.
+
+When exploring the relationship between F1 and generalizability (Figure~\ref{fig:change_in_gen}; bottom), it becomes
+apparent that even for the majority of models which may not have improved performance along both axes, either their
+generalizability or F1 score is improved. While an ideal classifier would reside in the top-right of the shown plots,
+the dataset resampling techniques consistently shift the distributions in this direction and improve classifiers along
+one if not both of these axes. Importantly, the variance in performance across both of these axes is significantly
+decreased, suggesting that resampling lead to the development of more reliable and reproducible classifiers.
+
+\subsection*{Number of Simulations is Largely Unimpactful}
+
+While we previously note an increase in classifier performance due to perturbation-enabled dataset resampling, it was
+important to explore the relationship between the number of simulated samples and the performance
+(Figure~\ref{fig:nmca}). There was no relationship between the number of independent simulations and performance, as
+measured by either F1 or generalizability, for all dataset resampling techniques other than mega-analysis. In the case
+of the mega-analytic approach, however, there was a significant positive relationship between the number of samples
+used and the generalizability of performance, though there remained no increase in F1 score. The mega-analysis approach
+is the only approach which changes the number of samples being provided directly to the classifiers, thus mimics an
+increase in sample size for traditional experiments. While outlying samples may play a small role in many of the
+proposed forms of resampling, or non-existent in the median case, the mega analytic approach treats all simulations
+with equal importance as unique samples in the dataset. It is for this reason that the observed relationship here
+is consistent to what one would expect when increasing the number of samples in their experiment.
 
 \section*{Discussion}
 
-\begin{itemize}
-\item MCA augmentation is a good thing for performance, increasing our ability to train, test, and generalize
-performance in standard models.
-\item RF models benefitted the least from MCA, likely because they already combine a series of simple and independent
-representations towards making their decisions.
-\item Adaboost performance increased dramatically on the testing dataset, however, the lack of generalizability
-increase suggests the model went from underperforming to overperforming with the addition of MCA.
-\item learning is typically easier in a balanced class setting, and MCA could potentially be used as an oversampling
-method to increase the balance of datasets. The advantages of an approach like this are that all results are
-biologically plausible, and it would be possible in context when simulation methods specific to the data modality or
-processing technique are unavailable.
-\item While our work demonstrates that poorer performing classifiers benefit more from this resampling, the limit
-of that is unclear. An avenue for future work includes exploring the performance space more broadly, and identifying a
-relationship between baseline performance and impact of perturbation-based augmentation. It is unlikely that a model
-classifying with an F1 score of $0.95$ would benefit the same as one with $0.75$, or one performing near chance.
-\item Further work should situate this result relative to increased data collection. This was not performed here,
-despite the existence of an MCA-perturbed repeated-measures dataset in the previous study, as the sample size of $25$
-individuals was too small to meaningfully train and evaluate models in a paradigm consistent with other evaluatiions.
-\item This work demonstrates the benefit of performing perturbation experiments goes beyond stability evaluation, and
-that these methods support data augmentation strategies that significantly improve our ability to model
-brain-phenotype relationships.
-\end{itemize}
+The numerical perturbation of analytic pipelines provides a unique, data-agnostic, and computationally unintrusive
+method for dataset augmentation. A technique such as MCA, samples can be simulated across an array of controlled
+executions and used to enrich collections. We demonstrate that such a collection can be used to improve the training,
+testing, and generalizability of classifiers.
+
+Through the training and evauation of $2,200$ combinations of preprocessing method, dimensionality reduction technique,
+classifier type, and resampling strategy, we found consistent improvement across all measured axes. Interestingly,
+while there was a statistically significant improvement in many classifiers, there was no significant difference
+between the improvement provided by each resampling strategy. This result importantly demonstrates that the added
+variability in results obtained through MCA is meaningful itself and the most important determination of performance is
+the inclusion of this variability.
+
+While the non-ensemble methods benefited the most from the dataset resampling strategies, the results presented in
+Figure~\ref{fig:change_in_gen} demonstrate that variability in performance across classifier configuration is reduced
+in all cases, and often improved along one or both of the F1 and generalizability axes.
+
+Although performance was improved by the integration of MCA simulated samples, performance was not significantly
+related to the number of simulations used in any case other than the mega-analytic resampling strategy. The
+independence of performance and number of simulations is encouraging, as a key limitation for using Monte Carlo methods
+is the often extreme computational overhead. The ability to use a small number of simulations and achieve equivalent
+performance through the majority of resampling techniques allows for significantly better performance without either
+added data collection and a theoretical doubling the sample processing time.
+
+An important limitation of our claim that classifiers with poorer baseline performance benefit more from augmentation
+is the limit to which that claim remains true. For example, it is unlikely that the trend observed here, with a mean
+baseline performance of $0.81$, would hold across models operating with baseline performance near chance.
+Characterizing the behaviour of this technique across a range of classification contexts and performances would shed
+light on whether this technique could be applied globally or if it is limited to making ``good'' models better.
+
+While the results presented here provide strong evidence in favour of dataset augmentation through numerical
+perturbations, the improvement from these methods could not be situated relative to further data acquisition or data
+subsampling due to the limited size of the available repeated-measures dataset~\cite{Kiar2020-yz}. It is likely,
+however, that the methods demonstrated here will work harmoniously with traditional methods of dataset augmentation,
+and that is an exciting avenue for future work.
+
+A common issue in many machine learning contexts is the unbalanced nature of datasets. When using a nearest-neighbour
+classifier, for instance, a dramatic difference the membership of each group could have significant impact on model
+hyper-parameters and performance. In contexts where improved sampling is not possible, such as when considering a
+clinical population, perturbation-augmented datasets could be applied for realistic upsampling of data. In this case, a
+mega-analytic aggregation strategy could be used in which more simulations would be performed for members of the
+under-represented class. This application is particularly important, as upsampling is often challenging in biological
+contexts where realistic simulation models are sparse.
+
+
+\section*{Conclusion}
+
+This work demonstrates the benefit of augmenting datasets through numerical perturbations. We present an approach which
+leverages the numerical instability inherent to pipelines for creating more accurate and generalizable classifiers and
+representations of brain-phenotype relationships. While the approach and results demonstrated here were specifically
+relevant in the context of brain imaging, the data-agnostic method for inducing perturbations and off-the-shelf machine
+learning techniques used suggest that this approach may be widely applicable across domains. This work uniquely shows
+that numerical uncertainty is an asset which can be harnessed to increase the robustness of learned relationships among
+data.
+
 
 \subsection*{Data \& Code Availability}
 The perturbed connectomes were publicly available data resource previously produced and made available by the
