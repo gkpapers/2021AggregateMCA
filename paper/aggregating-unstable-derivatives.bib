@@ -465,6 +465,84 @@
   language = "en"
 }
 
+@article{botvinik2020variability,
+  title={Variability in the analysis of a single neuroimaging dataset by many teams},
+  author={Botvinik-Nezer, Rotem and Holzmeister, Felix and Camerer, Colin F and Dreber, Anna and Huber, Juergen and Johannesson, Magnus and Kirchler, Michael and Iwanir, Roni and Mumford, Jeanette A and Adcock, R Alison and others},
+  journal={Nature},
+  pages={1--7},
+  year={2020},
+  publisher={Nature Publishing Group}
+}
+
+@article{weis2020sex,
+  title={Sex classification by resting state brain connectivity},
+  author={Weis, Susanne and Patil, Kaustubh R and Hoffstaedter, Felix and Nostro, Alessandra and Yeo, BT Thomas and Eickhoff, Simon B},
+  journal={Cerebral cortex},
+  volume={30},
+  number={2},
+  pages={824--835},
+  year={2020},
+  publisher={Oxford University Press}
+}
+
+@article{wade2017machine,
+  title={Machine learning on high dimensional shape data from subcortical brain surfaces: A comparison of feature selection and classification methods},
+  author={Wade, Benjamin SC and Joshi, Shantanu H and Gutman, Boris A and Thompson, Paul M},
+  journal={Pattern Recognition},
+  volume={63},
+  pages={731--739},
+  year={2017},
+  publisher={Elsevier}
+}
+
+@article{munsell2015evaluation,
+  title={Evaluation of machine learning algorithms for treatment outcome prediction in patients with epilepsy based on structural connectome data},
+  author={Munsell, Brent C and Wee, Chong-Yaw and Keller, Simon S and Weber, Bernd and Elger, Christian and da Silva, Laura Angelica Tomaz and Nesland, Travis and Styner, Martin and Shen, Dinggang and Bonilha, Leonardo},
+  journal={Neuroimage},
+  volume={118},
+  pages={219--230},
+  year={2015},
+  publisher={Elsevier}
+}
+
+@article{chaddock2010neuroimaging,
+  title={A neuroimaging investigation of the association between aerobic fitness, hippocampal volume, and memory performance in preadolescent children},
+  author={Chaddock, Laura and Erickson, Kirk I and Prakash, Ruchika Shaurya and Kim, Jennifer S and Voss, Michelle W and VanPatter, Matt and Pontifex, Matthew B and Raine, Lauren B and Konkel, Alex and Hillman, Charles H and others},
+  journal={Brain research},
+  volume={1358},
+  pages={172--183},
+  year={2010},
+  publisher={Elsevier}
+}
+
+@article{vandewalle2009functional,
+  title={Functional magnetic resonance imaging-assessed brain responses during an executive task depend on interaction of sleep homeostasis, circadian phase, and PER3 genotype},
+  author={Vandewalle, Gilles and Archer, Simon N and Wuillaume, Catherine and Balteau, Evelyne and Degueldre, Christian and Luxen, Andr{\'e} and Maquet, Pierre and Dijk, Derk-Jan},
+  journal={Journal of Neuroscience},
+  volume={29},
+  number={25},
+  pages={7948--7956},
+  year={2009},
+  publisher={Soc Neuroscience}
+}
+
+@article{zuo2014open,
+  title={An open science resource for establishing reliability and reproducibility in functional connectomics},
+  author={Zuo, Xi-Nian and Anderson, Jeffrey S and Bellec, Pierre and Birn, Rasmus M and Biswal, Bharat B and Blautzik, Janusch and Breitner, John CS and Buckner, Randy L and Calhoun, Vince D and Castellanos, F Xavier and others},
+  journal={Scientific data},
+  volume={1},
+  number={1},
+  pages={1--13},
+  year={2014},
+  publisher={Nature Publishing Group}
+}
+
+@article{di2019estimations,
+  title={Estimations of the weather effects on brain functions using functional MRI: A cautionary tale},
+  author={Di, Xin and Wolfer, Marie and K{\"u}hn, Simone and Zhang, Zhiguo and Biswal, Bharat B},
+  year={2019}
+}
+
 @ARTICLE{Zhu2018-cs,
   title    = "Random forest based classification of alcohol dependence patients
               and healthy controls using resting state {MRI}",
@@ -652,12 +730,74 @@
               parcellation; segmentation",
   language = "en"
 }
+
+@article{Kiar2020-lb,
+  title   = "Comparing perturbation models for evaluating stability of
+             neuroimaging pipelines",
+  author  = "Kiar, Gregory and de Oliveira Castro, Pablo and Rioux, Pierre and
+             Petit, Eric and Brown, Shawn T and Evans, Alan C and Glatard,
+             Tristan",
+  journal = "The International Journal of High Performance Computing
+             Applications",
+  year    =  2020
+}
 @MISC{Kiar2020-yz,
   title  = "Numerically Perturbed Structural Connectomes from 100 individuals
             in the {NKI} Rockland Dataset",
   author = "Kiar, Gregory",
   month  =  apr,
   year   =  2020
+}
+
+@ARTICLE{Glatard2015-vc,
+  title    = "Reproducibility of neuroimaging analyses across operating systems",
+  author   = "Glatard, Tristan and Lewis, Lindsay B and Ferreira da Silva,
+              Rafael and Adalat, Reza and Beck, Natacha and Lepage, Claude and
+              Rioux, Pierre and Rousseau, Marc-Etienne and Sherif, Tarek and
+              Deelman, Ewa and Khalili-Mahani, Najmeh and Evans, Alan C",
+  abstract = "Neuroimaging pipelines are known to generate different results
+              depending on the computing platform where they are compiled and
+              executed. We quantify these differences for brain tissue
+              classification, fMRI analysis, and cortical thickness (CT)
+              extraction, using three of the main neuroimaging packages (FSL,
+              Freesurfer and CIVET) and different versions of GNU/Linux. We
+              also identify some causes of these differences using library and
+              system call interception. We find that these packages use
+              mathematical functions based on single-precision floating-point
+              arithmetic whose implementations in operating systems continue to
+              evolve. While these differences have little or no impact on
+              simple analysis pipelines such as brain extraction and cortical
+              tissue classification, their accumulation creates important
+              differences in longer pipelines such as subcortical tissue
+              classification, fMRI analysis, and cortical thickness extraction.
+              With FSL, most Dice coefficients between subcortical
+              classifications obtained on different operating systems remain
+              above 0.9, but values as low as 0.59 are observed. Independent
+              component analyses (ICA) of fMRI data differ between operating
+              systems in one third of the tested subjects, due to differences
+              in motion correction. With Freesurfer and CIVET, in some brain
+              regions we find an effect of build or operating system on
+              cortical thickness. A first step to correct these reproducibility
+              issues would be to use more precise representations of
+              floating-point numbers in the critical sections of the pipelines.
+              The numerical stability of pipelines should also be reviewed.",
+  journal  = "Front. Neuroinform.",
+  volume   =  9,
+  pages    = "12",
+  month    =  apr,
+  year     =  2015,
+  keywords = "CIVET; FSL; Freesurfer; operating systems; reproducibility",
+  language = "en"
+}
+@article{bowring2019exploring,
+  title={Exploring the impact of analysis software on task fMRI results},
+  author={Bowring, Alexander and Maumet, Camille and Nichols, Thomas E},
+  journal={Human brain mapping},
+  volume={40},
+  number={11},
+  pages={3362--3384},
+  year={2019},
+  publisher={Wiley Online Library}
 }
 
 @ARTICLE{Wu2012-uc,
@@ -725,6 +865,16 @@
   year    =  1963
 }
 
+@article{woo2017building,
+  title={Building better biomarkers: brain models in translational neuroimaging},
+  author={Woo, Choong-Wan and Chang, Luke J and Lindquist, Martin A and Wager, Tor D},
+  journal={Nature neuroscience},
+  volume={20},
+  number={3},
+  pages={365},
+  year={2017},
+  publisher={Nature Publishing Group}
+}
 @ARTICLE{Park2015-uj,
   title    = "Structural and Functional Brain Connectivity of People with
               Obesity and Prediction of Body Mass Index Using Connectivity",
@@ -806,6 +956,26 @@
               (DWT); Probabilistic principal component analysis (PPCA);
               AdaBoost with random forests (ADBRF); Computer-aided diagnosis
               (CAD)"
+}
+@article{sudlow2015uk,
+  title={UK biobank: an open access resource for identifying the causes of a wide range of complex diseases of middle and old age},
+  author={Sudlow, Cathie and Gallacher, John and Allen, Naomi and Beral, Valerie and Burton, Paul and Danesh, John and Downey, Paul and Elliott, Paul and Green, Jane and Landray, Martin and others},
+  journal={Plos med},
+  volume={12},
+  number={3},
+  pages={e1001779},
+  year={2015},
+  publisher={Public Library of Science}
+}
+
+@article{varoquaux2018cross,
+  title={Cross-validation failure: small sample sizes lead to large error bars},
+  author={Varoquaux, Ga{\"e}l},
+  journal={Neuroimage},
+  volume={180},
+  pages={68--77},
+  year={2018},
+  publisher={Elsevier}
 }
 
 @INPROCEEDINGS{Tolan2018-nq,
