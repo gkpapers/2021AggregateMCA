@@ -89,7 +89,7 @@ def sigdig(array, base=2, axis=-1):
     # Otherwise, compute the number of significant digits using Parker, 1997
     c3locs = np.where(np.isnan(sigs))
     for c3l in zip(*c3locs):
-        sigs[c3l] = -np.log(sd[c3l] / mn[c3l] + eps)/np.log(base)
+        sigs[c3l] = -np.log(np.abs(sd[c3l] / mn[c3l]) + eps)/np.log(base)
 
     # Reset any negative values to zero
     c4l = np.where(sigs <= 0)
