@@ -28,7 +28,7 @@ fi
 
 clfs="svc rfc lrc knn ada"
 nmca="20 18 16 14 12 10 7 5 2"
-aggs="ref meta mega mean median consensus"
+aggs="ref meta mega mean median consensus truncate"
 graphs="graph rankgraph loggraph zgraph"
 dimred="pca fa"
 

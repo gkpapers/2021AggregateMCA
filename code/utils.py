@@ -33,11 +33,11 @@ def refTrunc(gs, index=0):
     loc = np.where(ref != 0)
 
     def trunc(value, prec):
-        fstr = ("{0:1." + str(prec-1) + "e}").format(value)
-        return np.float64(fstr).astype(value.dtype)
+        fstr = "{0:1." + str(np.max([0, prec-1])) + "e}"
+        return np.float64(fstr.format(value)).astype(value.dtype)
 
-    for l in zip(loc[0], loc[1]):
-        ref[l] = trunc(ref[l], digits[l])
+    for l0, l1 in zip(loc[0], loc[1]):
+        ref[l0, l1] = trunc(ref[l0, l1, 0], digits[l0, l1])
 
     return ref
 
@@ -92,7 +92,7 @@ def sigdig(array, base=2, axis=-1):
         sigs[c3l] = -np.log(sd[c3l] / mn[c3l] + eps)/np.log(base)
 
     # Reset any negative values to zero
-    c4l = np.where(sigs < 0)
+    c4l = np.where(sigs <= 0)
     sigs[c4l] = 0
 
     # Round up to nearest full bit, and return

@@ -8,7 +8,8 @@ from copy import deepcopy
 import pandas as pd
 import numpy as np
 
-from utils import structcon, passthrough, unstratifiedSample, refSample
+from utils import structcon, passthrough, unstratifiedSample
+from utils import refSample, refTrunc
 from skpatch import StackingClassifier, StratifiedGroupKFold
 
 
@@ -82,6 +83,11 @@ class AggregateLearner():
         elif aggregation == "mega":
             clfs, perf = self._simple_fit(func=passthrough)
             clf, oos = self._oos_eval(clfs, func=passthrough)
+
+        # Trunc: Truncate the reference executions to significant digits
+        elif aggregation == "truncate":
+            clfs, perf = self._simple_fit(func=refTrunc, index=self.refloc)
+            clf, oos = self._oos_eval(clfs, func=refTrunc, index=self.refloc)
 
         # Ref: Use the reference executions
         elif aggregation == "ref":

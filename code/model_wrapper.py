@@ -98,8 +98,8 @@ def main(args=None):
     parser.add_argument("classifier", choices=["knn", "svc", "lrc",
                                                "rfc", "ada"])
     # Note: "meta" aggregation includes "none"/"jackknife"
-    parser.add_argument("aggregation", choices=["ref", "median", "mean",
-                                                "consensus", "mega", "meta"])
+    parser.add_argument("aggregation", choices=["ref", "median", "mean", "mega",
+                                                "consensus", "meta", "truncate"])
     parser.add_argument("data", choices=["graph", "rankgraph",
                                          "loggraph", "zgraph"])
 
