@@ -26,7 +26,7 @@ def refSample(gs, index=0):
 
 def refTrunc(gs, index=0):
     # Compute edge-wise significant digits
-    digits = np.ceil(sigdig(gs, base=10, axis=2)).astype(int)
+    digits = sigdig(gs, base=10, axis=2)
 
     # Grab reference graph and non-zero locations
     ref = refSample(gs, index=index)
@@ -36,8 +36,8 @@ def refTrunc(gs, index=0):
         fstr = ("{0:1." + str(prec-1) + "e}").format(value)
         return np.float64(fstr).astype(value.dtype)
 
-    for l0, l1 in zip(loc[0], loc[1]):
-        ref[l0, l1] = trunc(ref[l0, l1], digits[l0, l1])
+    for l in zip(loc[0], loc[1]):
+        ref[l] = trunc(ref[l], digits[l])
 
     return ref
 
@@ -50,7 +50,7 @@ def unstratifiedSample(gs, verbose=False):
     return gs[:,:,idx]
 
 
-def sigdig(array, base=2, axis=None):
+def sigdig(array, base=2, axis=-1):
     try:
         # If we have a float, this is our value of epsilon
         eps = np.finfo(array.dtype).eps
@@ -65,24 +65,39 @@ def sigdig(array, base=2, axis=None):
         # Re-call the function with the float version
         return sigdig(a2, base=base, axis=axis)
 
+    # Initialize empty matrix the same size of the array
+    shp = list(array.shape)
+    shp.pop(axis)
+    sigs = np.empty(shp)
+    sigs[:] = np.NaN
+
     # Compute the standard deviation and handle special case 1:
     #   - if no variance, maximum significance
     sd = np.std(array, axis=axis)
-    if np.all(sd == 0):
-        return -np.log(eps)/np.log(base)
+    c1locs = np.where(sd == 0)
+    sigs[c1locs] = -np.log(eps)/np.log(base)
 
     # Compute the mean and handle special case 2:
     #   - if mean of 0, no significance.
     #   - N.B. this is the incorrect formula for zero-centered data
     mn = np.mean(array, axis=axis)
-    if np.all(mn == 0):
-        return 0
-
-    # N.B. It is currently unclear to me what we do for those values that _are_
-    # zero... Should we compute this element-by-element?
+    c2locs = np.where(mn == 0)
+    for c2l in zip(*c2locs):
+        if np.isnan(sigs[c2l]):
+            sigs[c2l] = 0
 
     # Otherwise, compute the number of significant digits using Parker, 1997
-    return -np.log(sd / mn + eps)/np.log(base)
+    c3locs = np.where(np.isnan(sigs))
+    for c3l in zip(*c3locs):
+        sigs[c3l] = -np.log(sd[c3l] / mn[c3l] + eps)/np.log(base)
+
+    # Reset any negative values to zero
+    c4l = np.where(sigs < 0)
+    sigs[c4l] = 0
+
+    # Round up to nearest full bit, and return
+    sigs = np.ceil(sigs).astype(int)
+    return sigs
 
 
 def qcAggregate(gs, agg, g_ind=0, log=True):
