@@ -78,6 +78,9 @@ def sigdig(array, base=2, axis=None):
     if np.all(mn == 0):
         return 0
 
+    # N.B. It is currently unclear to me what we do for those values that _are_
+    # zero... Should we compute this element-by-element?
+
     # Otherwise, compute the number of significant digits using Parker, 1997
     return -np.log(sd / mn + eps)/np.log(base)
 
