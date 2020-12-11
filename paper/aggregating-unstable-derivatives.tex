@@ -61,9 +61,9 @@
 \JournalInfo{$ $ } % Journal information
 \Archive{Pre-print} % Additional notes (e.g. copyright, DOI, review/research article)
 
-\PaperTitle{Perturbation-Enabled Data Augmentation Improves the Generalizability of Classifiers in Network Neuroscience} % Article title
+\PaperTitle{Data Augmentation Through Perturbations Leads to Improved Classifiers in Neuroimaging} % Article title
 
-\Authors{Gregory Kiar\textsuperscript{1}, Alan C. Evans\textsuperscript{1}, Tristan Glatard\textsuperscript{2}} % Authors
+\Authors{Gregory Kiar\textsuperscript{1}, Yohan Chatelain\textsuperscript{2}, Ali Salari\textsuperscript{2}, Alan C. Evans\textsuperscript{1}, Tristan Glatard\textsuperscript{2}} % Authors
 \affiliation{\textsuperscript{1}\textit{Montréal Neurological Institute, McGill University, Montréal, QC, Canada}}
 \affiliation{\textsuperscript{2}\textit{Department of Computer Science and Software Engineering, Concordia University, Montréal, QC, Canada}}
 
@@ -228,6 +228,10 @@ classifiers were trained, evaluated, and combined according to the following pro
 \paragraph{Reference} Networks generated without any MCA perturbations were selected for input to the models, serving
 as a benchmark.
 
+\paragraph{Truncate} The number of significant digits~\cite{Parker1997-qq} per-edge was calculated using all
+simulated networks, and the edge weights in the reference graph were truncated to the specified number of digits.
+Importantly, this is the only method used which deliberately squashes the variance observed across simulations.
+
 \paragraph{Jackknife} The datasets were repeatedly sampled such that a single randomly chosen observation of each
 unique network was selected (i.e. derived from the same input datum). This resampling was performed $100$ times,
 resulting in the total number of resamplings being $5\times$ larger than the number of unique observations per network,
@@ -253,9 +257,9 @@ classifier across the outputs of the jackknifed classifiers to learn a relations
 class labels.
 
 The robustness and possible benefit of each subsampling approach was measured by evaluation on a subset of all MCA
-simulations, including $9$ distinct numbers of simulations, ranging from $20$ to $2$ simulations per sample. Combining
+simulations, including $9$ distinct numbers of simulations, ranging from $2$ to $20$ simulations per sample. Combining
 the dataset sampling methods, the set of simulations, preprocessing strategies, dimensionality reduction techniques,
-and classifier models, there were $2,200$ models trained and evaluated.
+and classifier models, there were $2,560$ models trained and evaluated.
 
 \subsection*{Training \& Evaluation}
 
@@ -277,16 +281,6 @@ G = 1 - \lvert F1_{test} - F1_{validation} \rvert
 \label{eq:gen}
 \end{equation}
 
-where a score of $1$ (maximum) indicates the equivalent performance across both the validation and test sets, and a
-lower score (minimum of $0$) indicates inconsistent performance. The absolute change in performance was used in
-Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance similarly to under-performance. This
-is a desired attribute of the measure as all inconsistency, whether due to ``luck'' or model fit, is undesirable when
-applying a classifier out-of-sample.
-
-Differences in F1 score and generalizability for perturbed experiments with respect to their reference were used to
-measure the change in performance between for each dataset sampling technique, and statistical comparisons were made
-through Wilcoxon Signed-Rank tests.
-
 \begin{figure*}[bth!]\centering
 \includegraphics[width=\linewidth]{figures/1.pdf}
 \caption{Relative change in classifier performance with respect to classifier type and dataset sampling strategies as
@@ -297,6 +291,17 @@ decrease due to resampling, respectively.}
 \label{fig:overall_perf}
 \end{figure*}
 
+where a score of $1$ (maximum) indicates the equivalent performance across both the validation and test sets, and a
+lower score (minimum of $0$) indicates inconsistent performance. The absolute change in performance was used in
+Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance similarly to under-performance. This
+is a desired attribute of the measure as all inconsistency, whether due to ``luck'' or model fit, is undesirable when
+applying a classifier out-of-sample.
+
+Differences in F1 score and generalizability for perturbed experiments with respect to their reference were used to
+measure the change in performance between for each dataset sampling technique, and statistical comparisons were made
+through Wilcoxon Signed-Rank tests.
+
+
 %------------------------------------------------
 \section*{Results}
 
@@ -306,16 +311,27 @@ of significant differences, are made available through the GitHub repository.
 
 \subsection*{Data Resampling Improves Classification}
 
+\begin{table}[tbh]
+\centering
+\caption{Statistically significant change in performance from reference models. Red values indicate significant
+decline in performance, empty cells indicate no significant change, and black values indicate significant improvement.
+A single star representes $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
+\label{tab1:perf}
+\small
+\input{figures/tab1_performance.tex}
+\end{table}
+
 The change in performance for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The
 change in performance was measured as a change in F1 score on the validation set, the change in F1 score on the test
 set, and the change in overall generalizability, a measure which summarizes the similarity between validation and test
-performance for a given model.
+performance for a given model. The overall performance of each subsampling method across the sets is summarized in
+Table~\ref{tab1:perf}.
 
 The support vector machine and logistic regression models improve across each of these three measures for a variety of
-dataset sampling techniques, meaning that the addition of the MCA-perturbed samples improves the training, testing, and
-overall generalizability of the classifiers.
+dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
+and overall generalizability of the classifiers.
 
-Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experience minimal change in validation and often see
+Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experienced minimal change in validation and often saw
 their perfomance decline. However, the improvement of these classifiers on the test set suggests that resampling
 reduced overfitting in these classifiers. In the case of KNN, this translates to imrpoved generalizability, while in
 the case of AdaBoost generalizability was largely unchanged, suggesting that the model went from underperforming to
@@ -331,9 +347,9 @@ generalizability of their performance, meaning that there was a larger discrepan
 performance in many cases. This distinction from the other models is likely due to the fact that random forest is a
 simple ensemble technique which takes advantage of training many independent classifiers and samples them to assign
 final class predictions. It is likely that this approach forms more generalizable predictions generally, and thus the
-addition of more data does not improve performance further. While AdaBoost is also an ensemble method, the iterative
-training of models based on sample difficulty allows for the added variance in those samples to play an increasingly
-central role in the construction of class relationships.
+addition of more data does not significantly improve performance further. While AdaBoost is also an ensemble method,
+the iterative training of models with increasing emphasis on difficult samples allows for the added variance in those
+samples to play an increasingly central role in the construction of class relationships.
 
 \begin{figure*}[bht!]\centering
 \includegraphics[width=\linewidth]{figures/2a.pdf}
@@ -358,13 +374,19 @@ experiment context.}
 \end{figure*}
 
 
-Across all classifier types, it was found that both mega- and meta-analytic approaches outperformed other methods
-slightly, though this was not statistically significant. Additionally, while certain combinations of preprocessing,
-dimensionality reduction, and classifiers performed more harmoniously than others, there was no significant
-relationship between the performance of any single resampling method and preprocessing or dimensionality reduction
-technique. The above results show that dataset augmentation through MCA-perturbed pipeline outputs may be an effective
-way to improve the performance and generalizability of non-ensemble classifiers tasked with modeling brain-phenotype
-relationships, both within and out of sample.
+Across all classifier types, it was found that consensus, mega-, and meta-analytic approaches outperformed other
+dataset resampling methods in that each led to improved testing performance and generalizability. The only method which
+did not improve performance at all was the truncation resampling. This method was distinct from the others in that the
+variance observed across simulations was used to squash variance in the reference network, whether other approaches
+captured the variance. The finding that truncation hurts performance importantly suggests that the variability across
+the observed network is biologically meaningful and contains signal.
+
+While certain combinations of preprocessing, dimensionality reduction, and classifiers performed more harmoniously than
+others, there was no significant relationship between the performance of any single resampling method and preprocessing
+or dimensionality reduction technique. The above results show that dataset augmentation through MCA-perturbed pipeline
+outputs may be an effective way to improve the performance and generalizability of non-ensemble classifiers tasked with
+modeling brain-phenotype relationships, both within and out of sample, especially when variance is captured rather than
+removed.
 
 \subsection*{Resampling Leads to Consistent Performance}
 
