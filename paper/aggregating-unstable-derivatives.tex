@@ -428,12 +428,12 @@ method for dataset augmentation. Using a technique such as MCA, samples can be s
 executions and used to enrich datasets across a range of plausible results. We demonstrate that this method of dataset
 augmentation can be used to improve the training, testing, and generalizability of classifiers.
 
-Through the training and evauation of $2,200$ models combining varying strategies for preprocessing, dimensionality
+Through the training and evauation of $2,560$ models combining varying strategies for preprocessing, dimensionality
 reduction, classifier, and resampling, we found consistent improvement across all measured axes. Interestingly, while
-there was a statistically significant improvement in many classifiers, there was no significant difference between the
-improvement provided by each resampling strategy. This result importantly demonstrates that the added variability in
-results obtained through MCA is meaningful itself and the most important determination of performance is the inclusion
-of this variability.
+there was a statistically significant improvement when using many dataset resampling techniques, there was no
+significant improvement, and in fact a reduction, in the performance of the truncation method. This result importantly
+demonstrates that the added variability in results obtained through MCA is meaningful and signal-rich itself, and the
+most important determination of performance is the inclusion of this variability.
 
 While the non-ensemble methods benefited most obviously from the dataset resampling strategies, where both F1 and
 generalizability were often improved, the results presented in Figure~\ref{fig:change_in_gen} demonstrate that
@@ -491,8 +491,8 @@ leverages the numerical instability inherent to pipelines for creating more accu
 representations of brain-phenotype relationships. While the approach and results demonstrated here were specifically
 relevant in the context of brain imaging, the data-agnostic method for inducing perturbations and off-the-shelf machine
 learning techniques used suggest that this approach may be widely applicable across domains. This work uniquely shows
-that numerical uncertainty is an asset which can be harnessed to increase the robustness of learned relationships among
-data.
+that numerical uncertainty is an asset which can be harnessed to increase the signal captured from datasets and
+lead to more robust learned relationships.
 
 
 \subsection*{Data \& Code Availability}
