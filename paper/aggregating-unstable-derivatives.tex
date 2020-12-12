@@ -102,7 +102,7 @@ captured in the subsequently designed models.}
 \section*{Introduction}
 
 The application of machine learning has become commonplace for the identification and characterization of individual
-biomarkers in neuroimaging~\cite{woo2017building}. Models may be applied to discriminate between measures of brain
+biomarkers in neuroimaging~\cite{woo2017building}. Models have been applied to discriminate between measures of brain
 structure or function based upon phenotypic variables related to
 disease~\cite{Crossley2014-tg,Payabvash2019-tm,Tolan2018-nq}, development~\cite{Zhang2019-ko}, or other axes of
 potential consequence~\cite{Zhu2018-cs,Park2015-uj}.
@@ -121,9 +121,9 @@ Perturbation methods which inject small amounts of noise throught the execution 
 Arithmetic (MCA)~\cite{Parker1997-qq,Denis2016-wo}, have recently been used to induce instabilities in structural
 connectome estimation software~\cite{Kiar2020-lb}. Importantly, this technique produces a range of equally plausible
 results, where no single observation is more or less valid than the others – including those which were left
-unperturbed. While the impact that sampling from a set of perturbed connectomes may have on learning brain-phenotype
-relationships~\cite{Kiar2020-kz}, there remains potential for leveraging the distribution of results to augment
-datasets in lieu of increasing sample sizes or performing repeated measurements.
+unperturbed. While sampling from a set of perturbed connectomes may have an impact on learning brain-phenotype
+relationships~\cite{Kiar2020-kz}, there remains potential for leveraging the distribution of perturbed results to
+augment datasets in lieu of increasing sample sizes or performing repeated measurements.
 
 Using an existing collection of MCA-perturbed structural connectomes~\cite{Kiar2020-yz}, we trained classifiers on
 networks sampled from the distribution of results and evaluated their performance relative to using only the
