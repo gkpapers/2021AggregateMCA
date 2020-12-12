@@ -327,7 +327,7 @@ set, and the change in overall generalizability, a measure which summarizes the 
 performance for a given model. The overall performance of each subsampling method across the sets is summarized in
 Table~\ref{tab1:perf}.
 
-The support vector machine and logistic regression models improve across each of these three measures for a variety of
+The support vector machine and logistic regression models improve across each of the three measures for a variety of
 dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
 and overall generalizability of the classifiers.
 
@@ -337,19 +337,21 @@ reduced overfitting in these classifiers. In the case of KNN, this translates to
 the case of AdaBoost generalizability was largely unchanged, suggesting that the model went from underperforming to
 overperforming after dataset resampling. The unique decline in performance when using the mega-analytic resampling
 technique on KNN classifier is suggestive of poor hyperparameterization, as there is a strong relationship between the
-number of samples in the dataset and the $k$ parameter of the model. At present this parameter was scaled linearly with
-the number of MCA simulations used, however, it is both possible that an improved scaling function exists or that the
-model performance degrades with large sample sizes making it a poor model choice given this resampling technique.
+performance and the ratio of the number of samples in the dataset to the $k$ parameter of the model. At present this
+parameter was scaled linearly with the number of MCA simulations used, however, it is both possible that an improved
+scaling function exists or that the model performance degrades with large sample sizes making it a poor model choice
+given this resampling technique.
 
 The random forest classifiers uniquely did not see a significant change in validation or testing performance across the
 majority of resampling techniques. However, these classifiers did experience a significant decrease in the
 generalizability of their performance, meaning that there was a larger discrepancy between training and testing
-performance in many cases. This distinction from the other models is likely due to the fact that random forest is a
+performance in many cases. This distinction from the other models is possibly due to the fact that random forest is a
 simple ensemble technique which takes advantage of training many independent classifiers and samples them to assign
-final class predictions. It is likely that this approach forms more generalizable predictions generally, and thus the
-addition of more data does not significantly improve performance further. While AdaBoost is also an ensemble method,
-the iterative training of models with increasing emphasis on difficult samples allows for the added variance in those
-samples to play an increasingly central role in the construction of class relationships.
+final class predictions, allowing this approach to form more generalizable predictions, and thus the addition of more
+data does not significantly improve performance further. While AdaBoost is also an ensemble method, the iterative
+training of models with increasing emphasis on difficult samples allows for the added variance in those samples to play
+an increasingly central role in the construction of class relationships, and thus more directly takes advantage of the
+added variability in samples.
 
 \begin{figure*}[bht!]\centering
 \includegraphics[width=\linewidth]{figures/2a.pdf}
@@ -374,12 +376,12 @@ experiment context.}
 \end{figure*}
 
 
-Across all classifier types, it was found that consensus, mega-, and meta-analytic approaches outperformed other
-dataset resampling methods in that each led to improved testing performance and generalizability. The only method which
-did not improve performance at all was the truncation resampling. This method was distinct from the others in that the
-variance observed across simulations was used to squash variance in the reference network, whether other approaches
-captured the variance. The finding that truncation hurts performance importantly suggests that the variability across
-the observed network is biologically meaningful and contains signal.
+Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
+resampling methods, as each of these methods led to improved testing performance and generalizability. The only method
+which did not improve performance at all was the truncation resampling approach. This method was distinct from the
+others in that the variance observed across simulations was used to estimate and squash variance in the reference
+network, whether other approaches captured the variance. The finding that truncation hurts performance importantly
+suggests that the variability across the observed networks is biologically meaningful and contains signal.
 
 While certain combinations of preprocessing, dimensionality reduction, and classifiers performed more harmoniously than
 others, there was no significant relationship between the performance of any single resampling method and preprocessing
@@ -410,16 +412,16 @@ decreased, suggesting that resampling lead to the development of more reliable a
 \subsection*{Number of Simulations is Largely Unimpactful}
 
 While we previously note an increase in classifier performance due to perturbation-enabled dataset resampling, it was
-important to explore the relationship between the number of simulated samples and the performance
-(Figure~\ref{fig:nmca}). There was no relationship between the number of independent simulations and performance, as
-measured by either F1 or generalizability, for all dataset resampling techniques other than mega-analysis. In the case
-of the mega-analytic approach, however, there was a significant positive relationship between the number of samples
-used and the generalizability of performance, though there remained no increase in F1 score. The mega-analysis approach
-is the only approach which changes the number of samples being provided directly to the classifiers, thus mimics an
-increase in sample size for traditional experiments. While outlying samples may play a small role in many of the
-proposed forms of resampling, or non-existent in the median case, the mega analytic approach treats all simulations
-with equal importance as unique samples in the dataset. It is for this reason that the observed relationship here
-is consistent to what one would expect when increasing the number of samples in their experiment.
+important to explore the relationship between the number of simulated samples and performance (Figure~\ref{fig:nmca}).
+There was no relationship between the number of independent simulations and performance, as measured by either F1 or
+generalizability, for all dataset resampling techniques other than mega-analysis. In the case of the mega-analytic
+approach, however, there was a significant positive relationship between the number of samples used and the
+generalizability of performance, though there remained no increase in F1 score. The mega-analysis approach is the only
+approach which changes the number of samples being provided directly to the classifiers, thus mimics an increase in
+sample size for traditional experiments. While outlying samples may play a small role in many of the proposed forms of
+resampling, or non-existent in the median case, the mega analytic approach treats all simulations with equal importance
+as unique samples in the dataset. It is for this reason that the observed relationship here is consistent to what one
+would expect when increasing the number of samples in their experiment.
 
 \section*{Discussion}
 
