@@ -35,7 +35,7 @@
 
 \setlength{\columnsep}{0.55cm} % Distance between the two columns of text
 \setlength{\fboxrule}{0.75pt} % Width of the border around the abstract
-\linespread{1.5}
+\linespread{1.4}
 
 %----------------------------------------------------------------------------------------
 %	COLORS
@@ -139,7 +139,18 @@ The objective of this study was to evaluate the impact of aggregating collection
 learning robust brain-phenotype relationships. We sampled and aggregated simulated networks within individuals to learn
 relationships between brain connectivity and individual an trait, in this case age, and compared this to traditional
 baseline performance on this tasks. We compared aggregation strategies with respect to baseline validation performance,
-performance out-of-sample, and generalizability.
+performance out-of-sample, and generalizability. The experimental workflow is visualized in Figure~\ref{fig:workflow}.
+
+\begin{figure*}[bth!]\centering
+\includegraphics[width=\linewidth]{figures/0.pdf}
+\caption{Experiment workflow. MCA-simulated connectomes were previously generated for $100$ subjects, $20$ times each.
+The resulting dataset of $2,000$ connectomes were independently preprocessed using one of $4$ techniques. The dataset
+was then sampled according to one of $7$ dataset sampling strategies and using one of $9$ possible number of MCA
+simulations per subject. The dataset was split into balanced training and testing sets, and fed into the models. The
+models consisted of one of $2$ dimensionality reduction techniques prior to classification using one of $5$ classifier
+types. The models were fit and made predictions on the training set prior to making predictions on the test set.}
+\label{fig:workflow}
+\end{figure*}
 
 All developed software and analysis resources for this project have been made available through GitHub at
 \url{https://github.com/gkpapers/2020AggregateMCA}.
@@ -311,16 +322,6 @@ of significant differences, are made available through the GitHub repository.
 
 \subsection*{Data Resampling Improves Classification}
 
-\begin{table}[tbh]
-\centering
-\caption{Statistically significant change in performance from reference models. Red values indicate significant
-decline in performance, empty cells indicate no significant change, and black values indicate significant improvement.
-A single star representes $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
-\label{tab1:perf}
-\small
-\input{figures/tab1_performance.tex}
-\end{table}
-
 The change in performance for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The
 change in performance was measured as a change in F1 score on the validation set, the change in F1 score on the test
 set, and the change in overall generalizability, a measure which summarizes the similarity between validation and test
@@ -330,6 +331,16 @@ Table~\ref{tab1:perf}.
 The support vector machine and logistic regression models improve across each of the three measures for a variety of
 dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
 and overall generalizability of the classifiers.
+
+\begin{table}[t!]
+\centering
+\caption{Statistically significant change in performance. Red values indicate significant
+decline in performance, black values indicate improvement, and empty cells indicate no change. A single star
+represents $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
+\label{tab1:perf}
+\small
+\input{figures/tab1_performance.tex}
+\end{table}
 
 Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experienced minimal change in validation and often saw
 their perfomance decline. However, the improvement of these classifiers on the test set suggests that resampling
@@ -375,7 +386,6 @@ experiment context.}
 \label{fig:nmca}
 \end{figure*}
 
-
 Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
 resampling methods, as each of these methods led to improved testing performance and generalizability. The only method
 which did not improve performance at all was the truncation resampling approach. This method was distinct from the
@@ -420,8 +430,8 @@ generalizability of performance, though there remained no increase in F1 score. 
 approach which changes the number of samples being provided directly to the classifiers, thus mimics an increase in
 sample size for traditional experiments. While outlying samples may play a small role in many of the proposed forms of
 resampling, or non-existent in the median case, the mega analytic approach treats all simulations with equal importance
-as unique samples in the dataset. It is for this reason that the observed relationship here is consistent to what one
-would expect when increasing the number of samples in their experiment.
+as unique samples in the dataset. In this case, the relationship we observe is consistent to what one might expect when
+increasing the number of samples.
 
 \section*{Discussion}
 
