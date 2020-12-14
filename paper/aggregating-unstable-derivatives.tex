@@ -322,17 +322,25 @@ of significant differences, are made available through the GitHub repository.
 
 \subsection*{Data Resampling Improves Classification}
 
-The change in performance for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The
-change in performance was measured as a change in F1 score on the validation set, the change in F1 score on the test
-set, and the change in overall generalizability, a measure which summarizes the similarity between validation and test
-performance for a given model. The overall performance of each subsampling method across the sets is summarized in
-Table~\ref{tab1:perf}.
+The overall performance of each subsampling method is summarized in Table~\ref{tab1:perf}. The change in performance
+for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The change in performance was
+measured in both cases as a change in F1 score on the validation set, the change in F1 score on the test set, and the
+change in overall generalizability, a measure which summarizes the similarity between validation and test performance
+for a given model. 
 
-The support vector machine and logistic regression models improve across each of the three measures for a variety of
-dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
-and overall generalizability of the classifiers.
+Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
+resampling methods, as each of these methods led to improved testing performance and generalizability. The only method
+which did not improve performance at all was the truncation resampling approach. This method was distinct from the
+others in that the variance observed across simulations was used to estimate and squash variance in the reference
+network, whether other approaches captured the variance. The finding that truncation hurts performance importantly
+suggests that the variability across the observed networks is biologically meaningful and contains signal.
 
-\begin{table}[t!]
+In terms of specific classification performance with respect to dataset sampling, the support vector machine and
+logistic regression models improve across each of the three measures for a variety of dataset sampling techniques,
+suggesting that the addition of the MCA-perturbed samples improves the training, testing, and overall generalizability
+of these classifiers.
+
+\begin{table}[b!]
 \centering
 \caption{Statistically significant change in performance. Red values indicate significant
 decline in performance, black values indicate improvement, and empty cells indicate no change. A single star
@@ -386,19 +394,12 @@ experiment context.}
 \label{fig:nmca}
 \end{figure*}
 
-Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
-resampling methods, as each of these methods led to improved testing performance and generalizability. The only method
-which did not improve performance at all was the truncation resampling approach. This method was distinct from the
-others in that the variance observed across simulations was used to estimate and squash variance in the reference
-network, whether other approaches captured the variance. The finding that truncation hurts performance importantly
-suggests that the variability across the observed networks is biologically meaningful and contains signal.
-
 While certain combinations of preprocessing, dimensionality reduction, and classifiers performed more harmoniously than
 others, there was no significant relationship between the performance of any single resampling method and preprocessing
-or dimensionality reduction technique. The above results show that dataset augmentation through MCA-perturbed pipeline
-outputs may be an effective way to improve the performance and generalizability of non-ensemble classifiers tasked with
-modeling brain-phenotype relationships, both within and out of sample, especially when variance is captured rather than
-removed.
+or dimensionality reduction technique. Overall, the above results show that dataset augmentation through MCA-perturbed
+pipeline outputs may be an effective way to improve the performance and generalizability of non-ensemble classifiers
+tasked with modeling brain-phenotype relationships, both within and out of sample, especially when variance is captured
+rather than removed.
 
 \subsection*{Resampling Leads to Consistent Performance}
 
@@ -415,9 +416,9 @@ generalizability of performance on the task, and mitigating both under- and over
 When exploring the relationship between F1 and generalizability (Figure~\ref{fig:change_in_gen}; bottom), it becomes
 apparent that even for the majority of models which may not have improved performance along both axes, either their
 generalizability or F1 score is improved. While an ideal classifier would reside in the top-right of the shown plots,
-the dataset resampling techniques consistently shift the distributions in this direction and improve classifiers along
-one if not both of these axes. Importantly, the variance in performance across both of these axes is significantly
-decreased, suggesting that resampling lead to the development of more reliable and reproducible classifiers.
+the dataset resampling techniques consistently shift the distributions in this direction and often improve classifiers
+along one or both of these axes. Importantly, the variance in performance across both measures is significantly
+decreased, suggesting that resampling leads to more reliable and reproducible classifiers.
 
 \subsection*{Number of Simulations is Largely Unimpactful}
 
