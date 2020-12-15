@@ -117,7 +117,7 @@ Traditionally, this bias has been reduced through the collection and application
 datasets~\cite{sudlow2015uk,zuo2014open}, though this requires considerable resources and is not feasible in the
 context of all clinical populations.
 
-Perturbation methods which inject small amounts of noise throught the execution of a pipeline, such as Monte Carlo
+Perturbation methods which inject small amounts of noise through the execution of a pipeline, such as Monte Carlo
 Arithmetic (MCA)~\cite{Parker1997-qq,Denis2016-wo}, have recently been used to induce instabilities in structural
 connectome estimation software~\cite{Kiar2020-lb}. Importantly, this technique produces a range of equally plausible
 results, where no single observation is more or less valid than the others – including those which were left
@@ -137,8 +137,8 @@ robust and generalizable models of brain-phenotype relationships.
 
 The objective of this study was to evaluate the impact of aggregating collections of unstable brain networks towards
 learning robust brain-phenotype relationships. We sampled and aggregated simulated networks within individuals to learn
-relationships between brain connectivity and individual an trait, in this case age, and compared this to traditional
-baseline performance on this tasks. We compared aggregation strategies with respect to baseline validation performance,
+relationships between brain connectivity and individual phenotypes, in this case age, and compared this to baseline
+performance on this task. We compared aggregation strategies with respect to baseline validation performance,
 performance out-of-sample, and generalizability. The experimental workflow is visualized in Figure~\ref{fig:workflow}.
 
 \begin{figure*}[bth!]\centering
@@ -258,7 +258,7 @@ as input data to the classifiers in both collections.
 of each network. This data-aware aggregation method, developed for structural brain network analysis, preserves network
 properties often distorted when computing mean or median networks.
 
-\paragraph{Mega-analysis} All observations of each network were used simultaneously for classification, increaseing
+\paragraph{Mega-analysis} All observations of each network were used simultaneously for classification, increasing
 the effective sample size. Samples were organized such that all observations of the same network only appeared within a
 single fold for training and evaluation, ensuring double-dipping was avoided.
 
@@ -351,11 +351,11 @@ represents $p < 0.05$, and each additional star is an additional order of magnit
 \end{table}
 
 Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experienced minimal change in validation and often saw
-their perfomance decline. However, the improvement of these classifiers on the test set suggests that resampling
-reduced overfitting in these classifiers. In the case of KNN, this translates to imrpoved generalizability, while in
+their performance decline. However, the improvement of these classifiers on the test set suggests that resampling
+reduced overfitting in these classifiers. In the case of KNN, this translates to improved generalizability, while in
 the case of AdaBoost generalizability was largely unchanged, suggesting that the model went from underperforming to
 overperforming after dataset resampling. The unique decline in performance when using the mega-analytic resampling
-technique on KNN classifier is suggestive of poor hyperparameterization, as there is a strong relationship between the
+technique on KNN classifier is suggestive of poor hyper-parameterization, as there is a strong relationship between the
 performance and the ratio of the number of samples in the dataset to the $k$ parameter of the model. At present this
 parameter was scaled linearly with the number of MCA simulations used, however, it is both possible that an improved
 scaling function exists or that the model performance degrades with large sample sizes making it a poor model choice
@@ -403,8 +403,8 @@ rather than removed.
 
 \subsection*{Resampling Leads to Consistent Performance}
 
-To beter characterize the the benefit of resampling, the relationship between the magnitude of improvement and the
-baseline performance of the classifer were further explored (Figure~\ref{fig:change_in_gen}). We found that the
+To better characterize the the benefit of resampling, the relationship between the magnitude of improvement and the
+baseline performance of the classifier were further explored (Figure~\ref{fig:change_in_gen}). We found that the
 increase in the generalizability of a classifier was inversely related to the baseline generalizability
 (Figure~\ref{fig:change_in_gen}; top). In other words, the less generalizable a classifier was originally, the more its
 generalizability improved (significant at $p < 0.05$ for all dataset sampling strategies and classifier other than
@@ -441,7 +441,7 @@ method for dataset augmentation. Using a technique such as MCA, samples can be s
 executions and used to enrich datasets with a range of plausible results per sample. We demonstrate that this method of
 dataset augmentation can be used to improve the training, testing, and generalizability of classifiers.
 
-Through the training and evauation of $2,560$ models combining varying strategies for preprocessing, dimensionality
+Through the training and evaluation of $2,560$ models combining varying strategies for preprocessing, dimensionality
 reduction, classifier, and resampling, we found consistent improvement across all measured axes. Interestingly, while
 there was a statistically significant improvement when using many dataset resampling techniques, there was no
 significant improvement in the performance, and in fact a reduction, using the truncation resampling method as is shown
@@ -453,7 +453,7 @@ While the non-ensemble methods benefited most obviously from the dataset resampl
 generalizability were often improved, the results presented in Figure~\ref{fig:change_in_gen} demonstrate that
 variability in performance across both of these axes was reduced across all classifier configurations. While a
 reduction in the variability of performance is desirable in itself, this figure also illustrates that the performance
-of resulting models converges around the more performant models in the case of all classifers. The reduction in
+of resulting models converges around the more performant models in the case of all classifiers. The reduction in
 variability also results in models which differed less significantly when looking across classifier types.
 
 Although performance was improved by the integration of MCA simulated samples, performance was not significantly
