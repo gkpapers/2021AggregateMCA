@@ -472,9 +472,9 @@ such as the number of features per sample.
 While our study shows that classifiers with poorer baseline performance benefit more from augmentation, an important
 limitation of this is the operating point to which that claim remains true. For example, it is unlikely that the trend
 observed here for a task with a mean reference performance of $0.81$ would hold across models operating with reference
-performance near chance. Characterizing the behaviour of this technique across a range of classification contexts and
-performances would shed light on whether this technique could be applied globally or if it is limited to making
-``good'' models better.
+performance near chance or near perfect. Characterizing the behaviour of this technique across a range of
+classification contexts and performances would shed light on whether this technique could be applied globally or if it
+is limited to making ``good'' models better.
 
 It is a well understood problem that small sample sizes lead to uncertainty in modeling~\cite{varoquaux2018cross}.
 This is generally planned for in one of two ways: the collection of vast datasets, as is the case in the UK-BioBank
@@ -484,12 +484,21 @@ orchestrates multiple centres and scanners, each collecting multiple acquisition
 the additional data collection by these initiatives is both financially and temporally expensive and leads to
 unintended confounding effects associated with time of day~\cite{vandewalle2009functional},
 weather~\cite{di2019estimations}, or other off-target variables that may be poorly described in the resulting
-dataset~\cite{chaddock2010neuroimaging}. While the results presented here provide strong evidence in favour of dataset
-augmentation through numerical perturbations, the improvement from these methods has not be situated relative to
-additional data acquisition due to the limited sample size of the available perturbed repeated-measures
-dataset~\cite{Kiar2020-yz}. While it is likely that the MCA methods will work harmoniously with traditional methods of
-dataset augmentation, it is presently unclear if this technique could serve as a cost-effective replacement for data
-collection, and exploring that relationship is an exciting avenue for future work.
+dataset~\cite{chaddock2010neuroimaging}.
+
+While the results presented here provide strong evidence in favour of dataset augmentation through numerical
+perturbations, the improvement from these methods has not been directly compared to additional data acquisitions in
+this experiment due to the limited sample size of the available perturbed dataset~\cite{Kiar2020-yz}. Previous studies
+exploring the effect of sample size on neuroimaging classification tasks have shown that variability in performance
+decreases with sample size~\cite{chu2012does}, where a doubling of sample size from $100$ to $200$
+approximately corresponded to halving the uncertainty in performance~\cite{varoquaux2018cross}. However, this decrease
+in variability is often accompanied by a decrease in out of sample performance in practice~\cite{schnack2016detecting}.
+A meta-analysis across $69$ studies showed that increasing sample size was negatively related to out-of-sample
+performance~\cite{pulini2019classification}, where accuracy was noted to decline by approximately $5\%$ in a similar
+doubling from $100$ to $200$ samples, suggesting that a major contribution of increasing sample size in neuroimaging
+is a reduction in overfitting which must occur prior to a possible boost in performance. Our finding that MCA-based
+dataset augmentation reduced overfitting and improved upon baseline performance is encouraging, and suggests that
+models trained using such perturbed datasets may benefit more from increased data collection.
 
 A common issue in many machine learning contexts is the unbalanced nature of datasets. When using a nearest-neighbour
 classifier, for instance, a dramatic difference in the membership of each group could have significant impact on model
