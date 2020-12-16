@@ -150,8 +150,7 @@ The resulting dataset of $2,000$ connectomes were independently preprocessed usi
 was then sampled according to one of $7$ dataset sampling strategies and using one of $9$ possible number of MCA
 simulations per subject. The dataset was split into balanced training and testing sets, and fed into the models. The
 models consisted of one of $2$ dimensionality reduction techniques prior to classification using one of $5$ classifier
-types. The models were fit and made predictions on the training set prior to making predictions on the test set.
-\tristan{it's a detail but you might want to represent the unperturbed connectome on the figure}}
+types. The models were fit and made predictions on the training set prior to making predictions on the test set.}
 \label{fig:workflow}
 \end{figure*}
 
@@ -337,12 +336,10 @@ others in that the variance observed across simulations was used to estimate and
 network, whether other approaches captured the variance. The finding that truncation hurts performance importantly
 suggests that the variability across the observed networks is biologically meaningful and contains signal.
 
-The change in performance for each model and dataset sampling technique is
-shown in Figure~\ref{fig:overall_perf}. The support vector machine and
-logistic regression models improve across each of the three measures for a
-variety of dataset sampling techniques, suggesting that the addition of the
-MCA-perturbed samples improves the training, testing, and overall
-generalizability of these classifiers.
+The change in performance for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The
+support vector machine and logistic regression models improve across each of the three measures for a variety of
+dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
+and overall generalizability of these classifiers.
 
 \begin{table}[b!]
 \centering
@@ -512,10 +509,6 @@ mega-analytic aggregation strategy could be used in which more simulations would
 under-represented class, similar to the balancing of weights applicable to some models. This application is
 particularly important, as upsampling is often challenging in biological contexts where realistic simulation models are
 sparse.
-
-\tristan{You could also highlight that MCA was applied to a specific part of 
-the data preprocessing pipeline only, and that other steps, such as data preparation 
-or model construction, might also benefit from it.}
 
 \section*{Conclusion}
 
