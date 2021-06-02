@@ -128,7 +128,7 @@ def main(args=None):
 
     # Create aggregator object for the designed experiment
     clf = AggregateLearner(df, pipe,
-                           target_id="age",
+                           target_id="age", # replace with phenotypic variable of interest
                            observation_id=obs_id,
                            sample_id='subject',
                            data_id=ar.data,
