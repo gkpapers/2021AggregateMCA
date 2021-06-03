@@ -10,7 +10,7 @@ default:
 	${TEX} ${FILE}
 
 clean:
-	rm -f ${FILE}{.bcf,.blg,.bbl,.log,.aux,.out,.fdb_latexmk,.fls,.run.xml,.synctex.gz} &&\
+	-rm -f ${FILE}{.bcf,.blg,.bbl,.log,.aux,.out,.fdb_latexmk,.fls,.run.xml,.synctex.gz} &&\
 	rm Makefile
 
 cleanall:
