@@ -48,6 +48,7 @@
 \definecolor{xsamp}{RGB}{18,165,121} 
 
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
+\newcommand{\new}[1]{\color{blue}#1\color{black}}
 
 %----------------------------------------------------------------------------------------
 %	HYPERLINKS
@@ -119,13 +120,23 @@ Traditionally, this bias has been reduced through the collection and application
 datasets~\cite{sudlow2015uk,zuo2014open}, though this requires considerable resources and is not feasible in the
 context of all clinical populations.
 
+\new{Dataset augmentation has been broadly demonstrated as an effective technique for improving the generalizability of
+learned models, especially in deep learning~\cite{nalepa2019data}. In neuroimaging, augmentation often requires either
+realistic data simulators or phantom datasets~\cite{graham2016realistic}, and unfortunately they cannot be readily
+applied to real data. Recent advances in deep learning have made dataset augmentation far more
+accessible~\cite{shorten2019survey}, especially in medical imaging~\cite{yi2019generative}. However, due to the lack of
+well understood noise models in connectomics, the necessity of training, and often expensive computational
+requirements, the application of dataset augmentation to network neuroscience remains relatively uncharted territory
+(see Appendix~1\ref{app:augmentation} for details).}
+
 Perturbation methods which inject small amounts of noise through the execution of a pipeline, such as Monte Carlo
 Arithmetic (MCA)~\cite{Parker1997-qq,Denis2016-wo}, have recently been used to induce instabilities in structural
 connectome estimation software~\cite{Kiar2020-lb}. Importantly, this technique produces a range of equally plausible
 results, where no single observation is more or less valid than the others – including those which were left
 unperturbed. While sampling from a set of perturbed connectomes may have an impact on learning brain-phenotype
 relationships~\cite{Kiar2020-kz}, there remains potential for leveraging the distribution of perturbed results to
-augment datasets in lieu of increasing sample sizes or performing repeated measurements.
+augment datasets in lieu of increasing sample sizes, performing repeated measurements, \new{or developing data-specifc
+augmentation models}.
 
 Using an existing collection of MCA-perturbed structural connectomes~\cite{Kiar2020-yz}, we trained classifiers on
 networks sampled from the distribution of results and evaluated their performance relative to using only the
@@ -160,22 +171,43 @@ All developed software and analysis resources for this project have been made av
 \subsection*{Dataset}
 
 An existing dataset containing Monte Carlo Arithmetic (MCA) perturbed structural human brain networks was used for
-these experiments~\cite{Kiar2020-yz}. The perturbations introduced for the generation of brain networks in this dataset
-were at the level of machine-error, simulating expected error over a typical pipeline execution. This dataset contains
-a single session of data from $100$ individuals ($100\times 1 \times1$). The derived brain networks were generated with
-a probabilistic structural connectome estimation pipeline~\cite{Garyfallidis2014-ql} using a fixed random seed, and minimal
-Monte Carlo Arithmetic (MCA) perturbations were added to all Python-implemented operations throughout the
-pipeline~\cite{Denis2016-wo,Parker1997-qq}. Each sample was simulated $20$ times, resulting in $2,000$ unique graphs.
-Further information on the processing and curation of this dataset can be found here~\cite{Kiar2020-kz}.
+these experiments~\cite{Kiar2020-yz}. \new{While further information on the processing and curation of this dataset ca
+be found in~\cite{Kiar2020-kz}, a brief description of the data and processing follows here.}
 
+\new{The networks were derived from diffusion MRI data from the Nathan Kline Institute Rockland Sample
+dataset~\cite{zuo2014open}. The data were denoised and aligned prior to undergoing modelling via a probabilistic
+tractography pipeline built using Dipy~\cite{Garyfallidis2014-ql} with a fixed random state. The streamlines were
+ultimately mapped to regional network connections using the Desikan-Killiany-Tourville
+parcellation~\cite{Klein2012-vi}. The raw input data to this pipeline consisted of $4$-dimensional images (with the 
+fourth dimension corresponding to unique diffusion directions) containing O($10^8$) voxels, and the derived
+connectomes were matrices with dimensions $83 \times 83$, where each value at location ($i$, $j$) corresponds to the
+strength of connection between region $i$ and region $j$. As connections are undirected (i.e. the edge ($i$, $j$) is
+equal to the edge ($j$, $i$)), the matrices each consist of $3,403$ unique weighted connections.}
+
+\new{Perturbations were} introduced for \new{the diffusion modelling} of this dataset \new{using sparsely-introduced
+Monte Carlo Arithmetic} at the level of machine-precision, simulating expected error over a typical pipeline execution.
+\new{The MCA workflow was such that each inexact floating-point operation was perturbed with a zero-centered random
+variable 1-bit beyond the precision of the system~\cite{Denis2016-wo,Parker1997-qq}. In practice, this resulted in
+perturbations that were analogous to an inexact trailing decimal value of, say, $0.6$ being rounded up to $1.$ in
+$60\%$ of evaluations and down to $0.$ for the remaining $40\%$. The perturbations were randomly sampled for each
+operation, and thus the unique combinations of error accumulation over multiple executions of a pipeline lead to
+potentially distinct terminal results. The MCA approach is pipeline- and data-agnostic, making it widely applicable to
+a variety of pipelines or domains which may suffer a lack of context-specific perturbation or dataset augmentation
+strategies.}
+
+This dataset contains a single session of data from $100$ individuals ($100\times 1 \times1$). \new{The number of
+subjects included is consistent for the types of analyses performed below, and considered large in general for
+neuroimaging~\cite{neuroimagingsamplesize}.} Each sample was simulated $20$ times, resulting in $2,000$ unique graphs.
 This collection enabled the exploration of subsampling and aggregation methods in a typical learning context for
 neuroimaging~\cite{Dimitriadis2017-pd,Buchanan2014-pm}. Exploring the relationship between the number of simulations
-and performance further allows for MCA-enabled resampling to be evaluated as a method of dataset augmentation.
+and performance further allows for the cost of MCA-enabled resampling to be evaluated \new{in the context of} dataset
+augmentation.
 
 As the target for classification, individual-level phenotypic data strongly implicated in brain connectivity was
 desired. Participant age, which has consistently been shown to have a considerable impact on brain
 connectivity~\cite{Meier2012-ve,Wu2012-uc,Bookheimer2019-ti,Zhao2015-rm}, was selected and turned into a binary target
-by dividing participants into adult ($>18$) and non-adult groups ($68\%$ adult). 
+by dividing participants into adult ($>18$) and non-adult groups ($68\%$ adult). \new{For subsequent validation of
+findings, body mass index was chosen as a second target ($50\%$ overweight).}
 
 \subsection*{Preprocessing}
 Prior to being used for this task, the brain networks were represented as symmetric $83 \times 83$ adjacency
@@ -196,7 +228,9 @@ value. Ties were settled by averaging the rank, and all ranks were finally min-m
 \subsection*{Machine Learning Pipelines}
 
 The preprocessed connectomes were fed into pipelines consisting of two steps: dimensionality reduction and
-classification. Dimensionality reduction was applied using one of two methods:
+classification. \new{Given the high dimensionality ($3,403$ features) of the networks, the relatively small number of
+samples, and standard practice in the field~\cite{Payabvash2019-tm,Park2015-uj,weis2020sex}, no experiments were
+considered without dimensionality reduction.} Dimensionality reduction was applied using one of two methods:
 
 \paragraph{Principal Component Analysis} The connectomes were projected into the $20$ dimensions of highest variance.
 The number of components was chosen to capture approximately $90\%$ of the variance present within the dataset.
@@ -230,7 +264,7 @@ with a mean of $0.806$; this evaluation was performed on a consistent held-out t
 experiments, as described in a following section. This set of models was chosen as it includes i) well understood
 standard techniques, ii) both parametric and non-parametric methods, iii) both ensemble and non-ensemble
 methods, and iv) models which have been commonly deployed for the classification of neuroimaging
-datasets~\cite{Meier2012-ve,Tunc2016-cz, Zhu2018-cs,Payabvash2019-tm,Crossley2014-tg,Park2015-uj,Nayak2016-wl,Tolan2018-nq}.
+datasets~\cite{Meier2012-ve,Tunc2016-cz,Zhu2018-cs,Payabvash2019-tm,Crossley2014-tg,Park2015-uj,Nayak2016-wl,Tolan2018-nq}.
 
 \subsection*{Dataset Sampling}
 
@@ -308,7 +342,12 @@ where a score of $1$ (maximum) indicates the equivalent performance across both 
 lower score (minimum of $0$) indicates inconsistent performance. The absolute change in performance was used in
 Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance similarly to under-performance. This
 is a desired attribute of the measure as all inconsistency, whether due to chance or model fit, is undesirable when
-applying a classifier out-of-sample.
+applying a classifier out-of-sample. \new{Importantly, this measure does not use training performance as the reference,
+as is common in deep learning, but instead considers the validation performance. This is because training performance
+is prone to unrealistic inflation due to dataset memorization which may arise in some classifiers. Given that the
+validation performance is typically reported on classic models, this can be considered a \textit{practical} definition
+of generalizability, and is still in the spirit of ``evaluating performance on seen data to that on unseen
+data''~\cite{shorten2019survey}}.
 
 Differences in F1 score and generalizability for perturbed experiments with respect to their reference were used to
 measure the change in performance between for each dataset sampling technique, and statistical comparisons were made
@@ -324,17 +363,21 @@ of significant differences, are made available through the GitHub repository.
 
 \subsection*{Data Resampling Improves Classification}
 
-The overall performance of each subsampling method is summarized in Table~\ref{tab1:perf}. The change in performance was
-measured in both cases as a change in F1 score on the validation set, the change in F1 score on the test set, and the
-change in overall generalizability, a measure which summarizes the similarity between validation and test performance
-for a given model. 
+The overall performance of each subsampling method is summarized in Table~\ref{tab1:perf}. The change in performance
+was measured in both cases as a change in F1 score on the validation set, the change in F1 score on the test set, and
+the change in overall generalizability, a measure which summarizes the similarity between validation and test
+performance for a given model.
 
 Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
-resampling methods, as each of these methods led to improved testing performance and generalizability. The only method
-which did not improve performance at all was the truncation resampling approach. This method was distinct from the
-others in that the variance observed across simulations was used to estimate and squash variance in the reference
-network, whether other approaches captured the variance. The finding that truncation hurts performance importantly
-suggests that the variability across the observed networks is biologically meaningful and contains signal.
+resampling methods. Each of these methods led to improved testing performance and generalizability \new{on average
+by $5.2\%$ and $1.3\%$, respectively, which is consistent with other dataset augmentation approaches mentioned in the
+following section. These results are consistent when applied to prediction of a different phenotypic target, body mass
+index, which benefited from $3.9\%$ and $1.8\%$ improvements in F1 and generalizability. The complete sets of both
+results can be found in our GitHub repository}. The only method which did not improve performance at all was the
+truncation resampling approach. This method was distinct from the others in that the variance observed across
+simulations was used to estimate and squash variance in the reference network, whether other approaches captured the
+variance. The finding that truncation hurts performance importantly suggests that the variability across the observed
+networks contains biologically meaningful signal.
 
 The change in performance for each model and dataset sampling technique is shown in Figure~\ref{fig:overall_perf}. The
 support vector machine and logistic regression models improve across each of the three measures for a variety of
@@ -399,7 +442,7 @@ While certain combinations of preprocessing, dimensionality reduction, and class
 others, there was no significant relationship between the performance of any single resampling method and preprocessing
 or dimensionality reduction technique. Overall, the above results show that dataset augmentation through MCA-perturbed
 pipeline outputs may be an effective way to improve the performance and generalizability of non-ensemble classifiers
-tasked with modeling brain-phenotype relationships, both within and out of sample, especially when variance is captured
+tasked with modelling brain-phenotype relationships, both within and out of sample, especially when variance is captured
 rather than removed.
 
 \subsection*{Resampling Leads to Consistent Performance}
@@ -447,8 +490,12 @@ reduction, classifier, and resampling, we found consistent improvement across al
 there was a statistically significant improvement when using many dataset resampling techniques, there was no
 significant improvement in the performance, and in fact a reduction, using the truncation resampling method as is shown
 in Table~\ref{tab1:perf}. This result importantly demonstrates that the added variability in results obtained through
-MCA is meaningful and signal-rich itself, and an important determination of performance is the inclusion of this
-variability.
+MCA is valuable and signal-rich itself, and an important determination of performance is the inclusion of this
+variability. \new{Recent work has demonstrated another impactful source of variability in machine learning benchmark
+performance, namely the initialization and parameterization of models~\cite{bouthillier2021accounting}. Our studies
+reached a common conclusion, which is that model performance can be improved by considering a variety of
+individually-biased estimators. These results are both elegant realizations of the bias-variance
+trade-off~\cite{geman1992neural}}.
 
 While the non-ensemble methods benefited most obviously from the dataset resampling strategies, where both F1 and
 generalizability were often improved, the results presented in Figure~\ref{fig:change_in_gen} demonstrate that
@@ -477,7 +524,7 @@ performance near chance or near perfect. Characterizing the behaviour of this te
 classification contexts and performances would shed light on whether this technique could be applied globally or if it
 is limited to making ``good'' models better.
 
-It is a well understood problem that small sample sizes lead to uncertainty in modeling~\cite{varoquaux2018cross}.
+It is a well understood problem that small sample sizes lead to uncertainty in modelling~\cite{varoquaux2018cross}.
 This is generally planned for in one of two ways: the collection of vast datasets, as is the case in the UK-BioBank
 which strives to collect samples from half a million individuals~\cite{sudlow2015uk}, or the collection of repeated
 measurements from the selected samples, as is the case in the Consortium of Reliability and Reproducibility which
@@ -509,6 +556,20 @@ mega-analytic aggregation strategy could be used in which more simulations would
 under-represented class, similar to the balancing of weights applicable to some models. This application is
 particularly important, as upsampling is often challenging in biological contexts where realistic simulation models are
 sparse.
+
+\new{The presented dataset augmentation technique was not compared directly to other strategies due to a lack of
+readily available alternatives. Through a literature search, shown in Appendix~1\ref{app:augmentation}, it was found
+that only a single paper was published which performed dataset augmentation on structural connectomics data,
+specifically for the classification of multiple sclerosis patients on binarized connectivity
+graphs~\cite{barile2021data}. This work adapted a generative adversarial network (GAN) architecture, a structure that
+is commonly used in other domains of data augmentation. Published applications using GANs or other deep learning
+approaches for image data augmentation have reported increases in classification accuracy from
+$1–10\%$~\cite{shorten2019survey}. Given the on-average $5\%$ improvement in performance presented here, MCA-based
+augmentation can be considered consistent with the other types of data augmentation when used for classification. The
+data-agnostic and training-free nature of the MCA approach also enables this technique to be combined with other forms
+of dataset enhancement, such as directly in GANS or through the addition of realistic noise, when available. MCA has
+not been tested for other common applications of data augmentation, such as object detection or segmentation.}
+
 
 \section*{Conclusion}
 
@@ -546,5 +607,37 @@ with Health Canada, for the Canadian Open Neuroscience Platform initiative.
 \bibliographystyle{IEEEtran}
 \bibliography{aggregating-unstable-derivatives}
 
+\clearpage
+\onecolumn
+\section*{Appendix 1: Dataset Augmentation in Diffusion MRI Connectomics}
+\label{app:augmentation}
+
+To demonstrate the sparsity of existing applications and techniques which have been developed for dataset augmentation
+in network neuroscience, a PubMed query (Figure~\ref{pubmedquery}) was run and the results were explored. The query was
+performed on May 28th, 2021, and the results are discussed below with the complete results file published in this
+project's GitHub repository. The results of this query indicated:
+
+\begin{itemize}
+\item \textbf{13} total papers which were flagged as relevant.
+\item \textbf{5} of which were related to dataset augmentation.
+\item \textbf{4} of which were related to some modality of MRI.
+\item \textbf{1} of which was focused on improving classification performance through dataset augmentation.
+\end{itemize}
+
+The sole paper~\cite{barile2021data} which closely mirrored the focal application here is unpublished (found as a
+pre-publication copy which was accepted while the present paper was under review) and demonstrates how a novel
+generative adversarial network was used to improve the classification of multiple sclerosis patients from healthy
+controls. This paper demonstrated an improvement in F1 score from $0.66$ to $0.81$.
+
+\begin{figure}[h!]
+\begin{tcolorbox}\centering
+((diffusion MRI) OR (diffusion weighted imaging) OR (dwi) OR (dMRI) OR (d-MRI) OR (diffusion Imaging))\\
+AND (brain)\\
+AND ((network) OR (connectome) OR (structural connectome))\\
+AND ((data augmentation) OR (dataset augmentation))
+\end{tcolorbox}
+\caption{Demonstrative PubMed query to identify papers which apply dataset augmentation in network neuroscience.}
+\label{pubmedquery}
+\end{figure}
 
 \end{document}

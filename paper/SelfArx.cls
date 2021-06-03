@@ -41,12 +41,13 @@
 \RequirePackage{amsmath,amsfonts,amssymb}
 \RequirePackage{graphicx,xcolor,colortbl}
 \RequirePackage{booktabs}
+\usepackage{tcolorbox}
 \usepackage{pdfpages}
 \usepackage[superscript,nomove]{cite}
 \usepackage{lineno}
-%\setlength\linenumbersep{0.1cm}
-%\renewcommand\thelinenumber{\color{gray}\arabic{linenumber}}
-%\linenumbers
+\setlength\linenumbersep{0.1cm}
+\renewcommand\thelinenumber{\color{gray}\arabic{linenumber}}
+\linenumbers
 
 %----------------------------------------------------------------------
 %	MARGINS	
