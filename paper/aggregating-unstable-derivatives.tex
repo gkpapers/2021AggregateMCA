@@ -25,6 +25,8 @@
 \usepackage[english]{babel} % Specify a different language here - english by default
 
 \usepackage{lipsum} % Required to insert dummy text. To be removed otherwise
+\usepackage{xspace} % To fix the spacing at the end of command \new
+\usepackage{ulem} % provides \sout
 
 \captionsetup[figure]{justification=justified, singlelinecheck=off} 
 \captionsetup[table]{justification=justified, singlelinecheck=off} 
@@ -47,8 +49,9 @@
 \definecolor{xsess}{RGB}{53,99,161} 
 \definecolor{xsamp}{RGB}{18,165,121} 
 
-\newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
-\newcommand{\new}[1]{\color{blue}#1\color{black}}
+\newcommand{\tristan}[1]{\colorlet{saved}{.}\color{orange}\textbf{From Tristan:} #1\color{saved}\xspace}
+\newcommand{\tristanmod}[2]{\colorlet{saved}{.}\color{orange}\sout{#1} #2\color{black}\xspace\color{saved}}
+\newcommand{\new}[1]{\color{blue}#1\color{black}\xspace}
 
 %----------------------------------------------------------------------------------------
 %	HYPERLINKS
@@ -122,12 +125,20 @@ context of all clinical populations.
 
 \new{Dataset augmentation has been broadly demonstrated as an effective technique for improving the generalizability of
 learned models, especially in deep learning~\cite{nalepa2019data}. In neuroimaging, augmentation often requires either
-realistic data simulators or phantom datasets~\cite{graham2016realistic}, and unfortunately they cannot be readily
-applied to real data. Recent advances in deep learning have made dataset augmentation far more
-accessible~\cite{shorten2019survey}, especially in medical imaging~\cite{yi2019generative}. However, due to the lack of
-well understood noise models in connectomics, the necessity of training, and often expensive computational
-requirements, the application of dataset augmentation to network neuroscience remains relatively uncharted territory
-(see Appendix~1\ref{app:augmentation} for details).}
+realistic data simulators or phantom datasets~\cite{graham2016realistic}, \tristanmod{and unfortunately they cannot be readily
+applied to real data}{which significantly limits their applicability to
+real data} \tristan{Has data augmentation been done from simulation or
+phantom data though? Ref 18 is about tool validation, do you know anyone on
+data augmentation?}. Recent advances in deep learning have made dataset
+augmentation far more
+accessible~\cite{shorten2019survey}, \tristanmod{especially}{including} in
+medical imaging~\cite{yi2019generative,barile2021data}. However, due to the lack of
+\tristanmod{well understood}{widely accepted} noise models in connectomics,
+the necessity of \tristanmod{}{compute-intensive} training, and
+\tristanmod{often expensive computational requirements}{the associated
+infrastructural requirements}, the application of dataset augmentation to
+network neuroscience remains \tristanmod{relatively}{largely} uncharted
+territory (see Appendix~1\ref{app:augmentation} for details).}
 
 Perturbation methods which inject small amounts of noise through the execution of a pipeline, such as Monte Carlo
 Arithmetic (MCA)~\cite{Parker1997-qq,Denis2016-wo}, have recently been used to induce instabilities in structural
@@ -188,8 +199,8 @@ equal to the edge ($j$, $i$)), the matrices each consist of $3,403$ unique weigh
 Monte Carlo Arithmetic} at the level of machine-precision, simulating expected error over a typical pipeline execution.
 \new{The MCA workflow was such that each inexact floating-point operation was perturbed with a zero-centered random
 variable 1-bit beyond the precision of the system~\cite{Denis2016-wo,Parker1997-qq}. In practice, this resulted in
-perturbations that were analogous to an inexact trailing decimal value of, say, $0.6$ being rounded up to $1.$ in
-$60\%$ of evaluations and down to $0.$ for the remaining $40\%$. The perturbations were randomly sampled for each
+perturbations that were analogous to an inexact trailing decimal value of, say, $0.6$ being rounded up to $1.0$ in
+$60\%$ of evaluations and down to $0.0$ for the remaining $40\%$. The perturbations were randomly sampled for each
 operation, and thus the unique combinations of error accumulation over multiple executions of a pipeline lead to
 potentially distinct terminal results. The MCA approach is pipeline- and data-agnostic, making it widely applicable to
 a variety of pipelines or domains which may suffer a lack of context-specific perturbation or dataset augmentation
@@ -213,7 +224,7 @@ findings, body mass index was chosen as a second target ($50\%$ overweight).}
 Prior to being used for this task, the brain networks were represented as symmetric $83 \times 83$ adjacency
 matrices, sampled upon the Desikan-Killiany-Tourville~\cite{Klein2012-vi} anatomical parcellation. To reduce redundancy
 in the data, all edges belonging to the upper-triangle of these matrices were preserved and vectorized, resulting in a
-feature vector of $3,486$ edges per sample. All samples were preprocessed using one of four standard techniques:
+feature vector of $3,486$ edges per sample \tristan{It says 3,403 above}. All samples were preprocessed using one of four standard techniques:
 
 \paragraph{Raw} The raw streamline count edge-weight intensities were used as originally calculated.
 
@@ -344,13 +355,13 @@ Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance
 is a desired attribute of the measure as all inconsistency, whether due to chance or model fit, is undesirable when
 applying a classifier out-of-sample. \new{Importantly, this measure does not use training performance as the reference,
 as is common in deep learning, but instead considers the validation performance. This is because training performance
-is prone to unrealistic inflation due to dataset memorization which may arise in some classifiers. Given that the
+is prone to unrealistic inflation due to dataset memorization which may arise in some classifiers \tristanmod{}{(K-Nearest Neighbours is a good example)}. Given that the
 validation performance is typically reported on classic models, this can be considered a \textit{practical} definition
 of generalizability, and is still in the spirit of ``evaluating performance on seen data to that on unseen
 data''~\cite{shorten2019survey}}.
 
 Differences in F1 score and generalizability for perturbed experiments with respect to their reference were used to
-measure the change in performance between for each dataset sampling technique, and statistical comparisons were made
+measure the change in performance \tristanmod{between}{} for each dataset sampling technique, and statistical comparisons were made
 through Wilcoxon Signed-Rank tests.
 
 
@@ -366,13 +377,14 @@ of significant differences, are made available through the GitHub repository.
 The overall performance of each subsampling method is summarized in Table~\ref{tab1:perf}. The change in performance
 was measured in both cases as a change in F1 score on the validation set, the change in F1 score on the test set, and
 the change in overall generalizability, a measure which summarizes the similarity between validation and test
-performance for a given model.
+performance for a given model \tristanmod{}{(Eq.~\ref{eq:gen})}.
 
 Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
 resampling methods. Each of these methods led to improved testing performance and generalizability \new{on average
-by $5.2\%$ and $1.3\%$, respectively, which is consistent with other dataset augmentation approaches mentioned in the
+by $5.2\%$ and $1.3\%$, respectively \tristan{Reporting the average raw F1 score improvements might be clearer.
+You should also mention the improvement achieved by the "best" aggregation technique, possibly for the most improved classifiers.}, which is consistent with other dataset augmentation approaches mentioned in the
 following section. These results are consistent when applied to prediction of a different phenotypic target, body mass
-index, which benefited from $3.9\%$ and $1.8\%$ improvements in F1 and generalizability. The complete sets of both
+index, which benefited from $3.9\%$ and $1.8\%$ improvements in F1 and generalizability \tristan{How about reporting the equivalent of Table I for body-mass index?}. The complete sets of both
 results can be found in our GitHub repository}. The only method which did not improve performance at all was the
 truncation resampling approach. This method was distinct from the others in that the variance observed across
 simulations was used to estimate and squash variance in the reference network, whether other approaches captured the
@@ -447,7 +459,7 @@ rather than removed.
 
 \subsection*{Resampling Leads to Consistent Performance}
 
-To better characterize the the benefit of resampling, the relationship between the magnitude of improvement and the
+To better characterize the benefit of resampling, the relationship between the magnitude of improvement and the
 baseline performance of the classifier were further explored (Figure~\ref{fig:change_in_gen}). We found that the
 increase in the generalizability of a classifier was inversely related to the baseline generalizability
 (Figure~\ref{fig:change_in_gen}; top). In other words, the less generalizable a classifier was originally, the more its
@@ -609,6 +621,7 @@ with Health Canada, for the Canadian Open Neuroscience Platform initiative.
 
 \clearpage
 \onecolumn
+\new{
 \section*{Appendix 1: Dataset Augmentation in Diffusion MRI Connectomics}
 \label{app:augmentation}
 
@@ -619,13 +632,15 @@ project's GitHub repository. The results of this query indicated:
 
 \begin{itemize}
 \item \textbf{13} total papers which were flagged as relevant.
-\item \textbf{5} of which were related to dataset augmentation.
-\item \textbf{4} of which were related to some modality of MRI.
-\item \textbf{1} of which was focused on improving classification performance through dataset augmentation.
+\item \textbf{5} of which were related to dataset augmentation \tristan{mention what the other 8 ones were about?}.
+\item \textbf{4} of which were related to some modality of MRI \tristan{(the other one was about ...)}.
+\item \textbf{1} of which was focused on improving classification performance through dataset augmentation \tristan{(the 3 other ones were ...)}.
 \end{itemize}
 
-The sole paper~\cite{barile2021data} which closely mirrored the focal application here is unpublished (found as a
-pre-publication copy which was accepted while the present paper was under review) and demonstrates how a novel
+The sole paper~\cite{barile2021data} which closely mirrored the focal application \tristanmod{here is unpublished (found as a
+pre-publication copy which was accepted while the present paper was under review)}{This is a bit defensive, I would mention it only
+ in the answer to reviewer and not here.} 
+and demonstrates how a novel
 generative adversarial network was used to improve the classification of multiple sclerosis patients from healthy
 controls. This paper demonstrated an improvement in F1 score from $0.66$ to $0.81$.
 
@@ -639,5 +654,5 @@ AND ((data augmentation) OR (dataset augmentation))
 \caption{Demonstrative PubMed query to identify papers which apply dataset augmentation in network neuroscience.}
 \label{pubmedquery}
 \end{figure}
-
+}
 \end{document}
