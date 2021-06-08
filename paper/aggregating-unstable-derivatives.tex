@@ -333,16 +333,6 @@ G = 1 - \lvert F1_{test} - F1_{validation} \rvert
 \label{eq:gen}
 \end{equation}
 
-\begin{figure*}[bth!]\centering
-\includegraphics[width=\linewidth]{figures/1.pdf}
-\caption{Relative change in classifier performance with respect to classifier type and dataset sampling strategies as
-measured by change in F1 score on the validation set (top) or test set (middle), as well as the generalizability of
-performance (bottom). Each star annotation indicates an order of magnitude of statistically significant change,
-beginning at $0.05$ for one star and decreasing from there, with those in black or red indicating an increase or
-decrease due to resampling, respectively.}
-\label{fig:overall_perf}
-\end{figure*}
-
 where a score of $1$ (maximum) indicates the equivalent performance across both the validation and test sets, and a
 lower score (minimum of $0$) indicates inconsistent performance. The absolute change in performance was used in
 Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance similarly to under-performance. This
@@ -359,6 +349,15 @@ Differences in F1 score and generalizability for perturbed experiments with resp
 measure the change in performance for each dataset sampling technique, and statistical comparisons were made
 through Wilcoxon Signed-Rank tests.
 
+\begin{figure*}[bth!]\centering
+\includegraphics[width=\linewidth]{figures/1.pdf}
+\caption{Relative change in classifier performance with respect to classifier type and dataset sampling strategies as
+measured by change in F1 score on the validation set (top) or test set (middle), as well as the generalizability of
+performance (bottom). Each star annotation indicates an order of magnitude of statistically significant change,
+beginning at $0.05$ for one star and decreasing from there, with those in black or red indicating an increase or
+decrease due to resampling, respectively.}
+\label{fig:overall_perf}
+\end{figure*}
 
 %------------------------------------------------
 \section*{Results}
@@ -374,13 +373,25 @@ was measured in both cases as a change in F1 score on the validation set, the ch
 the change in overall generalizability, a measure which summarizes the similarity between validation and test
 performance for a given model \new{(Eq.~\ref{eq:gen})}.
 
+\begin{table}[b!]
+\centering
+\caption{Statistically significant change in performance. Red values indicate significant
+decline in performance, black values indicate improvement, and empty cells indicate no change. A single star
+represents $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
+\label{tab1:perf}
+\small
+\input{figures/tab1_performance.tex}
+\end{table}
+
 Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
-resampling methods. \new{Each of the aggregation methods led to improved testing performance and generalizability on
-average from $77.3\%$ to $81.2\%$ and from $96.0\%$ to $96.5\%$, respectively. These results were similar to those
-found in the prediction of body mass index, which noted $3.3\%$ and $1.7\%$ improvements in F1 and generalizability,
-respectively. Further detail on the results associated with body mass index prediction can be found in Appendix~2.
-The noted improvement for both tasks is consistent with other dataset augmentation approaches mentioned in the
-following section, which typically report improvements from $1–10\%$~\cite{shorten2019survey}.}
+resampling methods. \new{The dataset sampling methods led to improved testing performance and generalizability
+on average from $0.773$ to $0.812$ and from $0.960$ to $0.965$, respectively. These results were similar to those
+found in the prediction of body mass index, which noted $0.033$ and $0.017$ improvements in F1 and generalizability on
+average, respectively. Further detail on the results associated with body mass index prediction can be found in
+Appendix~2. The noted improvement for both tasks is consistent with other dataset augmentation approaches mentioned in
+the following section, which typically report improvements from $0.01–0.1$~\cite{shorten2019survey}. In some
+cases, such as several configurations of AdaBoost classifiers, improvements of up to $0.170$ in F1 and $0.150$ in
+generalizability were simultaneously observed, with model generalizability peaking at $0.994$.}
 
 The only method which did not improve performance at all was the truncation resampling approach. This method was
 distinct from the others in that the variance observed across
@@ -392,16 +403,6 @@ The change in performance for each model and dataset sampling technique is shown
 support vector machine and logistic regression models improve across each of the three measures for a variety of
 dataset sampling techniques, suggesting that the addition of the MCA-perturbed samples improves the training, testing,
 and overall generalizability of these classifiers.
-
-\begin{table}[b!]
-\centering
-\caption{Statistically significant change in performance. Red values indicate significant
-decline in performance, black values indicate improvement, and empty cells indicate no change. A single star
-represents $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
-\label{tab1:perf}
-\small
-\input{figures/tab1_performance.tex}
-\end{table}
 
 Distinctly, k-nearest neighbours (KNN) and AdaBoost classifiers experienced minimal change in validation and often saw
 their performance decline. However, the improvement of these classifiers on the test set suggests that resampling
@@ -685,12 +686,12 @@ Table~\ref{tab1:perf_app} shows statistically significant change for each datase
 across all models used for body mass index classification. Similarly to the results presented in the main body of this
 article, the mega- and meta-analytic techniques were superior to the others, and resulted in improvements in model
 performance both within and out of sample, alongside improving the generalizability in performance. For these two
-techniques, the performance improved from $59.0\%$ to $62.3\%$ on average, with an improvement in generalizability from
-$92.1\%$ to $93.9\%$. In the case of the other dataset sampling strategies, it was noted that the performance decreased
+techniques, the performance improved from $0.590$ to $0.623$ on average, with an improvement in generalizability from
+$0.921$ to $0.939$. In the case of the other dataset sampling strategies, it was noted that the performance decreased
 while the generalizability increased for each configuration. This suggests that models were ``over-performing'' prior
 to the data augmentation, and resampling networks served as a regularization. When considering these summaries
 alongside Figure~\ref{fig:overall_perf_app}, we can see that the noted decrease in test performance was likely driven
-by the significant reduction in performance of the Adabost models while noting an improvement of generalizability
+by the significant reduction in performance of the AdaBoost models while noting an improvement of generalizability
 suggests a previous over-performance of models built using this classifier type. Figure~\ref{fig:change_in_gen_app}
 also shows consistent results to those presented above, in which the generalizability trends towards a ``central''
 score, and that the dataset sampling approaches tend to shift the model performance either towards increased F1,
