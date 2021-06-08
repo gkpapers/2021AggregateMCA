@@ -19,7 +19,7 @@
 
 
 1. Front Neurol. 2020 Oct 19;11:584682. doi: 10.3389/fneur.2020.584682. eCollection 
-  2020.
+    2020.
 
 Brain Age Prediction of Children Using Routine Brain MR Images via Deep 
 Learning.

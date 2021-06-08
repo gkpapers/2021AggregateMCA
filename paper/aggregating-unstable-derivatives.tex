@@ -124,20 +124,14 @@ datasets~\cite{sudlow2015uk,zuo2014open}, though this requires considerable reso
 context of all clinical populations.
 
 \new{Dataset augmentation has been broadly demonstrated as an effective technique for improving the generalizability of
-learned models, especially in deep learning~\cite{nalepa2019data}. In neuroimaging, augmentation often requires either
-realistic data simulators or phantom datasets~\cite{graham2016realistic}, \tristanmod{and unfortunately they cannot be readily
-applied to real data}{which significantly limits their applicability to
-real data} \tristan{Has data augmentation been done from simulation or
-phantom data though? Ref 18 is about tool validation, do you know anyone on
-data augmentation?}. Recent advances in deep learning have made dataset
-augmentation far more
-accessible~\cite{shorten2019survey}, \tristanmod{especially}{including} in
-medical imaging~\cite{yi2019generative,barile2021data}. However, due to the lack of
-\tristanmod{well understood}{widely accepted} noise models in connectomics,
-the necessity of \tristanmod{}{compute-intensive} training, and
-\tristanmod{often expensive computational requirements}{the associated
-infrastructural requirements}, the application of dataset augmentation to
-network neuroscience remains \tristanmod{relatively}{largely} uncharted
+learned models, especially in deep learning~\cite{nalepa2019data}. In neuroimaging, augmentation is often performed
+throughout the process of tool validation and requires either realistic data simulators or phantom
+datasets~\cite{graham2016realistic}, which significantly limits their
+applicability to real data. Recent advances in deep learning have made dataset augmentation far more
+accessible~\cite{shorten2019survey}, including in medical imaging~\cite{yi2019generative,barile2021data}. However, due
+to the lack of widely accepted noise models in connectomics, the necessity of compute-intensive training, and
+the associated infrastructural requirements, the application of dataset augmentation to
+network neuroscience remains largely uncharted
 territory (see Appendix~1\ref{app:augmentation} for details).}
 
 Perturbation methods which inject small amounts of noise through the execution of a pipeline, such as Monte Carlo
@@ -224,7 +218,7 @@ findings, body mass index was chosen as a second target ($50\%$ overweight).}
 Prior to being used for this task, the brain networks were represented as symmetric $83 \times 83$ adjacency
 matrices, sampled upon the Desikan-Killiany-Tourville~\cite{Klein2012-vi} anatomical parcellation. To reduce redundancy
 in the data, all edges belonging to the upper-triangle of these matrices were preserved and vectorized, resulting in a
-feature vector of $3,486$ edges per sample \tristan{It says 3,403 above}. All samples were preprocessed using one of four standard techniques:
+feature vector of $3,403$ edges per sample. All samples were preprocessed using one of four standard techniques:
 
 \paragraph{Raw} The raw streamline count edge-weight intensities were used as originally calculated.
 
@@ -355,13 +349,14 @@ Eq.~\ref{eq:gen}, resulting in a score which penalizes spurious over-performance
 is a desired attribute of the measure as all inconsistency, whether due to chance or model fit, is undesirable when
 applying a classifier out-of-sample. \new{Importantly, this measure does not use training performance as the reference,
 as is common in deep learning, but instead considers the validation performance. This is because training performance
-is prone to unrealistic inflation due to dataset memorization which may arise in some classifiers \tristanmod{}{(K-Nearest Neighbours is a good example)}. Given that the
+is prone to unrealistic inflation due to dataset memorization which may arise in some classifiers; K-Nearest Neighbours
+is a good example of this. Given that the
 validation performance is typically reported on classic models, this can be considered a \textit{practical} definition
 of generalizability, and is still in the spirit of ``evaluating performance on seen data to that on unseen
 data''~\cite{shorten2019survey}}.
 
 Differences in F1 score and generalizability for perturbed experiments with respect to their reference were used to
-measure the change in performance \tristanmod{between}{} for each dataset sampling technique, and statistical comparisons were made
+measure the change in performance for each dataset sampling technique, and statistical comparisons were made
 through Wilcoxon Signed-Rank tests.
 
 
@@ -377,16 +372,18 @@ of significant differences, are made available through the GitHub repository.
 The overall performance of each subsampling method is summarized in Table~\ref{tab1:perf}. The change in performance
 was measured in both cases as a change in F1 score on the validation set, the change in F1 score on the test set, and
 the change in overall generalizability, a measure which summarizes the similarity between validation and test
-performance for a given model \tristanmod{}{(Eq.~\ref{eq:gen})}.
+performance for a given model \new{(Eq.~\ref{eq:gen})}.
 
 Across all classifier types it was found that consensus, mega-, and meta-analytic approaches outperformed other dataset
-resampling methods. Each of these methods led to improved testing performance and generalizability \new{on average
-by $5.2\%$ and $1.3\%$, respectively \tristan{Reporting the average raw F1 score improvements might be clearer.
-You should also mention the improvement achieved by the "best" aggregation technique, possibly for the most improved classifiers.}, which is consistent with other dataset augmentation approaches mentioned in the
-following section. These results are consistent when applied to prediction of a different phenotypic target, body mass
-index, which benefited from $3.9\%$ and $1.8\%$ improvements in F1 and generalizability \tristan{How about reporting the equivalent of Table I for body-mass index?}. The complete sets of both
-results can be found in our GitHub repository}. The only method which did not improve performance at all was the
-truncation resampling approach. This method was distinct from the others in that the variance observed across
+resampling methods. \new{Each of the aggregation methods led to improved testing performance and generalizability on
+average from $77.3\%$ to $81.2\%$ and from $96.0\%$ to $96.5\%$, respectively. These results were similar to those
+found in the prediction of body mass index, which noted $3.3\%$ and $1.7\%$ improvements in F1 and generalizability,
+respectively. Further detail on the results associated with body mass index prediction can be found in Appendix~2.
+The noted improvement for both tasks is consistent with other dataset augmentation approaches mentioned in the
+following section, which typically report improvements from $1–10\%$~\cite{shorten2019survey}.}
+
+The only method which did not improve performance at all was the truncation resampling approach. This method was
+distinct from the others in that the variance observed across
 simulations was used to estimate and squash variance in the reference network, whether other approaches captured the
 variance. The finding that truncation hurts performance importantly suggests that the variability across the observed
 networks contains biologically meaningful signal.
@@ -599,13 +596,13 @@ authors~\cite{Kiar2020-yz}. They can be found persistently at \url{https://doi.o
 made available through The Canadian Open Neuroscience Platform (\url{https://portal.conp.ca/search}, search term
 ``Kiar''). All software developed for processing or evaluation is publicly available on GitHub at
 \url{https://github.com/gkpapers/2021AggregateMCA}. Experiments were launched on Compute Canada's HPC cluster
-environment. 
+environment.
 
 \subsection*{Author Contributions}
 GK was responsible for the experimental design, data processing, analysis, interpretation, and the majority of writing.
 All authors contributed to the revision of the manuscript. TG and ACE contributed to experimental design, analysis,
 interpretation. The authors declare no competing interests for this work. Correspondence and requests for materials
-should be addressed to Gregory Kiar at \url{gregory.kiar@mail.mcgill.ca}.
+should be addressed to Gregory Kiar at \url{gregory.kiar@childmind.org}.
 
 \subsection*{Acknowledgments} 
 This research was financially supported by the Natural Sciences and Engineering Research Council of Canada (NSERC)
@@ -632,17 +629,19 @@ project's GitHub repository. The results of this query indicated:
 
 \begin{itemize}
 \item \textbf{13} total papers which were flagged as relevant.
-\item \textbf{5} of which were related to dataset augmentation \tristan{mention what the other 8 ones were about?}.
-\item \textbf{4} of which were related to some modality of MRI \tristan{(the other one was about ...)}.
-\item \textbf{1} of which was focused on improving classification performance through dataset augmentation \tristan{(the 3 other ones were ...)}.
+\item \textbf{5} of which were related to dataset augmentation, with the other 8 having been incorrectly flagged as
+relevant and were either focused on clinical practice, non-human data, or analyzed relationships between structural and
+functional networks.
+\item \textbf{4} of which were related to some modality of MRI, the other 1 focusing on high resolution CT imaging.
+\item \textbf{1} of which was focused on improving classification performance through dataset augmentation, with the
+remaining 3 either centered on applications in transfer learning across datasets of different quality, leveraging T1w
+MRI data for age prediction, or improving segmentation of MR perfusion images of stroke patients.
 \end{itemize}
 
-The sole paper~\cite{barile2021data} which closely mirrored the focal application \tristanmod{here is unpublished (found as a
-pre-publication copy which was accepted while the present paper was under review)}{This is a bit defensive, I would mention it only
- in the answer to reviewer and not here.} 
-and demonstrates how a novel
+The sole paper~\cite{barile2021data} which closely mirrored the focal application and demonstrates how a novel
 generative adversarial network was used to improve the classification of multiple sclerosis patients from healthy
-controls. This paper demonstrated an improvement in F1 score from $0.66$ to $0.81$.
+controls. This paper demonstrated an improvement in F1 score from $0.66$ to $0.81$. This technique used binary
+structural connectivity networks for disease prediction using a dataset containing $48$ patients.
 
 \begin{figure}[h!]
 \begin{tcolorbox}\centering
@@ -655,4 +654,76 @@ AND ((data augmentation) OR (dataset augmentation))
 \label{pubmedquery}
 \end{figure}
 }
+
+\clearpage
+\onecolumn
+\new{
+\section*{Appendix 2: Augmentation Improvement in a BMI Classification Task}
+
+To validate that the observed benefit of using Monte Carlo Arithmetic-derived networks wasn't only found in the
+specific age classification task tested, we reproduced a body mass index (BMI) classification task~\cite{Park2015-uj}.
+The experimental configuration shown here was identical to the above, with the class labels assigned via a threshold
+of $BMI > 25$, which is consistent with examples from the literature~\cite{Park2015-uj}.
+
+One key distinction from the age classification task was that the majority of models in the BMI classification task
+did not perform statistically better than chance using the reference networks. While $36/40$ combinations of network
+preprocessing, dimensionality reduction, and classifier type produced a model which was meaningfully better than chance
+for the age classification task without dataset augmentation, only $10/40$ reference models were significant for the
+BMI task. The performance for all models was still included in the following analysis in the interest of consistency.
+
+\begin{table}[h!]
+\centering
+\caption{Statistically significant change in performance for body mass index classification. Red values indicate
+significant decline in performance, black values indicate improvement, and empty cells indicate no change. A single
+star represents $p < 0.05$, and each additional star is an additional order of magnitude of significance.}
+\label{tab1:perf_app}
+\small
+\input{figures/tab2_performance_bmi.tex}
+\end{table}
+
+Table~\ref{tab1:perf_app} shows statistically significant change for each dataset augmentation technique aggregated
+across all models used for body mass index classification. Similarly to the results presented in the main body of this
+article, the mega- and meta-analytic techniques were superior to the others, and resulted in improvements in model
+performance both within and out of sample, alongside improving the generalizability in performance. For these two
+techniques, the performance improved from $59.0\%$ to $62.3\%$ on average, with an improvement in generalizability from
+$92.1\%$ to $93.9\%$. In the case of the other dataset sampling strategies, it was noted that the performance decreased
+while the generalizability increased for each configuration. This suggests that models were ``over-performing'' prior
+to the data augmentation, and resampling networks served as a regularization. When considering these summaries
+alongside Figure~\ref{fig:overall_perf_app}, we can see that the noted decrease in test performance was likely driven
+by the significant reduction in performance of the Adabost models while noting an improvement of generalizability
+suggests a previous over-performance of models built using this classifier type. Figure~\ref{fig:change_in_gen_app}
+also shows consistent results to those presented above, in which the generalizability trends towards a ``central''
+score, and that the dataset sampling approaches tend to shift the model performance either towards increased F1,
+generalizability, or both.
+
+The classifiers and more generally model combinations which performed the best given dataset augmentation via MCA
+varied across the two experiments, and it is important to note that this was expected and does not change the
+significance of the presented findings. The purpose of this work was not to design an ideal experimental configuration
+that was uniformly out-performing another, but demonstrate the efficacy of MCA as a dataset augmentation technique,
+in particular for domains in which alternatives may not exist more generally.
+}
+
+\begin{figure*}[htbp]\centering
+\includegraphics[width=0.8\linewidth]{figures/1_app.pdf}
+\caption{Relative change in classifier performance with respect to classifier type and dataset sampling strategies as
+measured by change in F1 score on the validation set (top) or test set (middle), as well as the generalizability of
+performance (bottom) for the body mass index classification task. Each star annotation indicates an order of magnitude
+of statistically significant change, beginning at $0.05$ for one star and decreasing from there, with those in black or
+red indicating an increase or decrease due to resampling, respectively.}
+\label{fig:overall_perf_app}
+\end{figure*}
+
+\begin{figure*}[hbtp]\centering
+\includegraphics[width=0.8\linewidth]{figures/2a_app.pdf}
+\includegraphics[width=0.8\linewidth]{figures/2b_app.pdf}
+\caption{Relationship between generalizability and resampling. Top: change in the generalizability of classifiers with
+respect to the reference generalizability. Each data point represents the mean change in generalizability for all
+models using the same preprocessing and dimensionality reduction techniques for a given classifier and dataset sampling
+strategy. Bottom: contour density distributions of generalizability and F1 scores across all models for both reference
+and resampled training.
+% The vertical lines for each plot represent the mean generalizability for the associated models.
+}
+\label{fig:change_in_gen_app}
+\end{figure*}
+
 \end{document}
